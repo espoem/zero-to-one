@@ -42,7 +42,7 @@ Standardized English-to-Czech terminology for numerical computing, statistical l
 | **Evidence Lower Bound (ELBO)** | **Dolní mez věrohodnosti (ELBO)** | Variational objective $\mathbb{E}_{q}[\log p_\theta(\mathbf{x}\mid\mathbf{z})] - D_{\mathrm{KL}}(q_\phi(\mathbf{z}\mid\mathbf{x}) \Vert p(\mathbf{z}))$ lower-bounding marginal log-likelihood $\log p_\theta(\mathbf{x})$. | Kingma & Welling (2013) |
 | **Reparameterization Trick** | **Reparametrizační trik** | Expressing $\mathbf{z} = \boldsymbol{\mu} + \boldsymbol{\sigma} \odot \boldsymbol{\varepsilon}$ with $\boldsymbol{\varepsilon} \sim \mathcal{N}(\mathbf{0}, I)$ so gradients propagate through stochastic sampling nodes. | Kingma & Welling (2013) |
 | **Mode Collapse** | **Kolaps módů** | GAN failure mode where generator $G(\mathbf{z})$ concentrates probability mass on a narrow subset of data modes rather than covering $p_{\text{data}}$. | Goodfellow et al. (2014) |
-| **Denoising Diffusion (DDPM)** | **Denoising difuzní pravděpodobnostní model** | Generative Markov chain that progressively adds Gaussian noise $q(\mathbf{x}_t\mid\mathbf{x}*0)$ and learns reverse denoising transitions $p*\theta(\mathbf{x}_{t-1}\mid\mathbf{x}_t)$. | Ho et al. (2020) |
+| **Denoising Diffusion (DDPM)** | **Denoising difuzní pravděpodobnostní model** | Generative Markov chain that progressively adds Gaussian noise $q(x_t\mid x_0)$ and learns reverse denoising transitions $p_\theta(x_{t-1}\mid x_t)$. | Ho et al. (2020) |
 | **Over-Smoothing (GNN)** | **Přehlazování grafových příznaků** | Degeneration of node embeddings toward indistinguishable stationary vectors as graph convolutional layers $L$ stack beyond graph diameter. | Li et al. (2018); Kipf & Welling (2017) |
 
 ---

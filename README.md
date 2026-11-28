@@ -20,9 +20,9 @@ zero-to-one/
 ├── technologies/      # react · solidjs · panda-css · postgres · nodejs · sqlite · redis · elasticsearch ·
 │                      # containers · kubernetes · argocd · terraform · gitlab-ci · observability ·
 │                      # aws · gcp · azure · cloudflare
-├── algorithms/        # dsa
+├── algorithms/        # dsa · ml-foundations
 └── architecture/      # data-systems · distributed-systems · networking · security-identity ·
-                       # cloud-foundations · functional-programming · system-design
+                       # cloud-foundations · functional-programming · system-design · ai-engineering
 ```
 
 ### Track Standard
@@ -42,7 +42,7 @@ All tooling is pinned per track with [mise](https://mise.jdx.dev/) (`.mise.toml`
 
 ## 2. Curriculum Roadmap & Status
 
-31 tracks: 31 complete, 0 in progress, 0 planned. All five phases are complete; see [.agents/PLAN.md](./.agents/PLAN.md) for the master plan and [.agents/STATUS.md](./.agents/STATUS.md) for the status board.
+33 tracks: 33 complete, 0 in progress, 0 planned. All six phases are complete; see [.agents/PLAN.md](./.agents/PLAN.md) for the master plan and [.agents/STATUS.md](./.agents/STATUS.md) for the status board.
 
 | Domain | Track | Scope | Status | Path |
 | :-- | :-- | :-- | :-: | :-- |
@@ -70,6 +70,8 @@ All tooling is pinned per track with [mise](https://mise.jdx.dev/) (`.mise.toml`
 | `technologies/` | **Cloudflare** | Cloudflare edge platform: Workers & workerd, V8 isolates, Durable Objects, KV, R2, D1, Hyperdrive, Queues, and Zero Trust security | 🟢 Complete | [technologies/cloudflare/](./technologies/cloudflare/) |
 | `technologies/` | **Azure** | Microsoft Azure enterprise cloud architecture: Entra ID, RBAC/ABAC, ARM/Bicep & Deployment Stacks, VNets & Private Link DNS, Container Apps, Functions, Service Bus, Storage, Cosmos DB, and AZ-104 / AZ-305 / AI-200 | 🟢 Complete | [technologies/azure/](./technologies/azure/) |
 | `algorithms/` | **DSA** | Algorithm design, complexity analysis and data structures with proofs, invariants and TypeScript test suites | 🟢 Complete | [algorithms/dsa/](./algorithms/dsa/) |
+| `algorithms/` | **ML Foundations** | Python for AI & data engineering (NumPy strides, DVC), classical ML & metrics (`scikit-learn`), 8 neural architectures (`MLP`, `CNN`, `LSTM`, `Transformer`/RoPE, `AE`/`VAE`, `GAN`, `Diffusion`, `GNN`) with animated SVGs, 8 KV-cache compression methods (incl. `MLA`), PTQ/GPTQ/AWQ quantization, and PSI/KS drift monitoring | 🟢 Complete | [algorithms/ml-foundations/](./algorithms/ml-foundations/) |
+| `architecture/` | **AI Engineering** | LLM fundamentals, prompt & context engineering, structured outputs, end-to-end RAG pipeline & 16 advanced patterns (MRL, ColBERT, GraphRAG, HyDE, RRF, Agentic RAG), Agent & Harness engineering (MCP `2026-07-28`, LangGraph, HITL), 8 agent metrics & Ragas evals, LLMOps (OTel GenAI), and 8-layer AI Security Stack (OWASP/NIST/ATLAS, ModelScan, ML-BOM) | 🟢 Complete | [architecture/ai-engineering/](./architecture/ai-engineering/) |
 | `architecture/` | **Data systems** | Storage engines, indexing, transactions and isolation, WAL and recovery, replication, sharding, caching, encoding and stream processing | 🟢 Complete | [architecture/data-systems/](./architecture/data-systems/) |
 | `architecture/` | **Networking** | The protocol stack from Ethernet, IP and BGP through TCP, DNS, TLS 1.3, HTTP/1.1 to HTTP/3 and QUIC, load balancing and Linux network operations | 🟢 Complete | [architecture/networking/](./architecture/networking/) |
 | `architecture/` | **Security & identity** | Threat modeling, applied cryptography, PKI and mTLS, sessions, OAuth 2.1/OIDC, WebAuthn, authorization models, vulnerability classes and supply chain | 🟢 Complete | [architecture/security-identity/](./architecture/security-identity/) |
@@ -105,6 +107,8 @@ To bridge technical English documentation with accurate, established Czech acade
 - **[GitLab CI Glossary](./technologies/gitlab-ci/GLOSSARY.md)** covers pipeline architecture, runner execution models, caching and artifacts, child/downstream pipelines, OIDC federated authentication, and supply-chain SLSA/cosign signing.
 - **[Observability Glossary](./technologies/observability/GLOSSARY.md)** covers OpenTelemetry data models (metrics, logs, traces), OTLP protocols, Prometheus/PromQL, Grafana LGTM, and multi-window burn rate alerting.
 - **[Data Structures & Algorithms Glossary](./algorithms/dsa/GLOSSARY.md)** covers complexity analysis, data structures, sorting and searching, graph algorithms, dynamic programming, greedy methods, string algorithms, and probabilistic structures.
+- **[ML Foundations Glossary](./algorithms/ml-foundations/GLOSSARY.md)** covers NumPy strided arrays, data leakage and DVC versioning, bias–variance and PR/ROC metrics, neural architectures (`MLP`, `CNN`, `LSTM`, `Transformer`/RoPE, `VAE`, `GAN`, `DDPM`, `GCN`/`GAT`), 8 KV-cache compression techniques (`MQA`, `GQA`, `MLA`, `Sliding Window`, `Attention Sinks`, `PagedAttention`, `RadixAttention`, `KIVI`), quantization (`GPTQ`, `AWQ`), and `PSI`/`KS` drift monitoring.
+- **[AI Engineering Glossary](./architecture/ai-engineering/GLOSSARY.md)** covers prompt and context engineering, grammar-constrained outputs, MRL embeddings, hybrid RRF/ColBERT/GraphRAG/HyDE retrieval, Ragas evaluation metrics, agent harnesses, loops, memory, MCP `2026-07-28`, LangGraph Pregel execution, 8 agent operational metrics, LLMOps OTel GenAI telemetry, and the 8-layer AI security stack (`OWASP`, `NIST AI RMF`, `MITRE ATLAS`, `ModelScan`, `ML-BOM`).
 - **[Data Systems Glossary](./architecture/data-systems/GLOSSARY.md)** covers storage engines, indexing and vector search, isolation levels, write-ahead logging and recovery, replication, sharding, caching, serialization, and stream processing.
 - **[Distributed Systems Glossary](./architecture/distributed-systems/GLOSSARY.md)** covers system models, clocks and ordering, consistency models, replication and quorums, consensus, distributed transactions, CRDTs, and Byzantine fault tolerance.
 - **[Networking Glossary](./architecture/networking/GLOSSARY.md)** covers link layer and IP routing, BGP, TCP and congestion control, DNS, TLS on the wire, HTTP/1.1 through HTTP/3 and QUIC, load balancing, and Linux kernel networking.

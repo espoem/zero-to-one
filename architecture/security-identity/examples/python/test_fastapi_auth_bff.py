@@ -16,6 +16,7 @@ from auth_service import (
     CLIENT_ID,
     REDIRECT_URI,
     SESSION_COOKIE,
+    TX_COOKIE,
     InMemoryAuthorizationServer,
     compute_s256_challenge,
     create_app,
@@ -30,6 +31,7 @@ def _b64url_json(obj: dict[str, object]) -> str:
 def _complete_bff_login(client: TestClient, auth_server: InMemoryAuthorizationServer) -> str:
     login_resp = client.get("/auth/login")
     assert login_resp.status_code == 200
+    assert TX_COOKIE in client.cookies
     login_data = login_resp.json()
 
     auth_resp = auth_server.authorize(
@@ -78,6 +80,19 @@ def test_oauth21_bff_pkce_login_and_cookie_order_flow() -> None:
         assert order_resp.headers["cache-control"] == "no-store"
         assert order_resp.headers["x-content-type-options"] == "nosniff"
 
+        # Simulate expired session access token -> BFF rotates refresh token automatically
+        sid = client.cookies[SESSION_COOKIE]
+        app.state.sessions[sid].access_token = auth_server.mint_access_token(
+            sub="alice-42", scope="orders:read orders:write", exp_offset_s=-120
+        )
+        refreshed_order_resp = client.post(
+            "/bff/orders",
+            json={"item": "yubikey-5c", "quantity": 1},
+            headers={"Sec-Fetch-Site": "same-origin"},
+        )
+        assert refreshed_order_resp.status_code == 200
+        assert refreshed_order_resp.json()["owner"] == "alice-42"
+
 
 def test_blocks_rfc9207_mixup_and_cross_site_csrf() -> None:
     auth_server = InMemoryAuthorizationServer()
@@ -103,6 +118,19 @@ def test_blocks_rfc9207_mixup_and_cross_site_csrf() -> None:
         )
         assert mixup_resp.status_code == 400
         assert mixup_resp.json()["detail"] == "issuer_mixup_detected"
+
+        # Victim browser without the attacker's __Host-auth-tx cookie rejects login CSRF
+        with TestClient(app, base_url="https://app.example.com") as victim_client:
+            csrf_login_resp = victim_client.get(
+                "/auth/callback",
+                params={
+                    "code": auth_resp["code"],
+                    "state": login_data["state"],
+                    "iss": auth_resp["iss"],
+                },
+            )
+            assert csrf_login_resp.status_code == 400
+            assert csrf_login_resp.json()["detail"] == "invalid_or_replayed_state"
 
         # Complete legitimate login, then attempt cross-site POST
         _complete_bff_login(client, auth_server)

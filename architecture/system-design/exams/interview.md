@@ -2751,7 +2751,7 @@ An audit-ingestion service writes `50,000` large `64 KiB` compliance records per
 
 <details><summary>Answer</summary>
 
-**A.** `Write-Through` updates Redis synchronously on every write, creating write amplification and pushing `~3.2 GiB/min` of write-once compliance records through the `16 GiB` cache, evicting genuinely hot read keys. `Write-Around` (no-write-allocate) writes directly to PostgreSQL and populates Redis only on a read miss (while deleting existing keys on updates so cached copies never turn stale).
+**A.** `Write-Through` updates Redis synchronously on every write, creating write amplification and pushing `~3.05 GiB/min` (`3.28 GB/min`) of write-once compliance records through the `16 GiB` cache, evicting genuinely hot read keys. `Write-Around` (no-write-allocate) writes directly to PostgreSQL and populates Redis only on a read miss (while deleting existing keys on updates so cached copies never turn stale).
 
 - Why not B: `Write-Through` commits synchronously to PostgreSQL so Redis crashes do not lose committed writes, whereas `Write-Behind` introduces RPO > 0 risk in volatile memory and still caches cold writes.
 - Why not C: `Refresh-Ahead` continuously reloads keys before TTL expiry, worsening DB load on cold write-once records.

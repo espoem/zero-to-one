@@ -43,21 +43,21 @@ States: ⬜ brief ready → 🟦 authoring → 🟨 challenge + verify → 🟧 
 | 4 | `architecture/system-design` | Opus / Antigravity | `track/system-design-enrichment` | ✅ merged | Merged 2026-11-20 (14 mods) + Wave A/B 2026-11-21 (24 mods, 56 SVGs, 18 test suites); enriched & merged 2026-11-22 with Module 25 (Reliable AI Systems, 570 lines), Module 26 (Secure-by-Design & 7-Layer API Defense, 522 lines), M03/M04 proxy/SPOF/API-lifecycle/CAP-PACELC deltas, 4 SVGs (60 total), 2 TS proof suites (`examples/19`, `examples/20`; 103 hermetic tests across 20 suites), 132 `Q-SD-*` + 70 `Q-CERT-*` questions; Argon (`opencode-go/gemini-4-argon`) & Grok (`opencode-go/grok-4.7`) challenger findings 100% resolved. |
 | 5 | `architecture/functional-programming` | Antigravity | `track/scala-fp` | ✅ merged | Merged 2026-11-20: 12 modules (424–483 lines each), 52-term glossary, 65-q bank + mock, 26 TS + 12 Scala 3 tests passing; challenger & verifier gates resolved and clean. |
 | 5 | `languages/scala` | Antigravity | `track/scala-fp` | ✅ merged | Merged 2026-11-20: 10 modules (400–453 lines each; Scala 3.10.1 / 3.9 LTS / JDK 25 / Cats 2.13 / CE3 3.7.1 / FS2 3.16.0 / ZIO 2.1.26), 57-term glossary, 65-q EPFL/interview bank + mock, 25 Scala 3 tests passing; challenger & verifier gates resolved and clean. |
-| 6 | `architecture/system-design` (Phase 6) | `agy` Neon (orchestrator) | `track/system-design-phase6` | 🟦 authoring | System Design in 12 Lines, Master Template, Engineering Docs (PRD/TRD/App Flow/Design Brief/Background Schema/Implementation Plan), M27 Backend Architecture Patterns + TS proof |
-| 6 | `architecture/networking` (Phase 6) | `agy` Neon (orchestrator) | `track/networking-phase6` | 🟦 authoring | M13 6 Load Balancing Algorithms (RR, WRR, Least Connections, Least Response Time, IP Hash, Consistent Hashing) + TS simulation proof |
-| 6 | `architecture/data-systems` & `technologies/redis` (Phase 6) | `agy` Neon (orchestrator) | `track/data-redis-phase6` | 🟦 authoring | Write-Around, Event Invalidation, Request Coalescing, Deadlocks, Database Concepts Quick Map, Redis + Caching Handbook |
-| 6 | `architecture/security-identity` (Phase 6) | `agy` Neon (orchestrator) | `track/security-auth-phase6` | 🟦 authoring | Auth, JWT & OAuth 2.0/2.1 Handbook + Node.js/Express & Python/FastAPI runnable proofs |
-| 6 | `algorithms/ml-foundations` | `agy` Neon (orchestrator) | `track/ml-foundations` | ⬜ brief ready | 6 modules: Python for AI & Data Eng, Classical ML & Metrics, NN Architectures (MLP/CNN/LSTM/Transformer/AE/GAN/Diffusion/GNN + animated SVGs), 8 KV-Cache Shrinkage Methods (incl. MLA), Quantization & ML Monitoring |
-| 6 | `architecture/ai-engineering` | `agy` Neon (orchestrator) | `track/ai-engineering` | ⬜ brief ready | 7 modules: LLM/Prompt/Context/Structured Outputs, RAG Pipeline & Advanced RAG (16 concepts), Agent & Harness Engineering (MCP/LangGraph/HITL), AI Agent Metrics & Evals, LLMOps, AI Security Stack & Responsible AI |
+| 6 | `architecture/system-design` (Phase 6) | `agy` Neon (orchestrator) | `track/system-design-phase6` | ✅ merged | Merged 2026-11-28 (`3b6fddd`): System Design in 12 Lines, Master Template, 6 Engineering Spec Docs (PRD/TRD/App Flow/Design Brief/Background Schema/Implementation Plan), Write-Around + 11-strategy matrix, M27 Backend Architecture Patterns + animated SVG + `examples/21` (`111/111` tests pass), `Q-SD-133`–`138`; Hydrogen verified. |
+| 6 | `architecture/networking` (Phase 6) | `agy` Neon (orchestrator) | `track/networking-phase6` | ✅ merged | Merged 2026-11-28 (`7d58c78`): M13 6 Load Balancing Algorithms (RR, Smooth WRR, Least Connections, Least Response Time/EWMA+P2C, IP Hash, Consistent Hashing) + `examples/15` (`39/39` tests pass); Hydrogen verified. |
+| 6 | `architecture/data-systems` & `technologies/redis` (Phase 6) | `agy` Neon (orchestrator) | `track/data-redis-phase6` | ✅ merged | Merged 2026-11-28 (`4f9bb20`, `9e67c50`): Write-Around, Event Invalidation, Request Coalescing, Deadlocks, Database Concepts Quick Map + SQL vs NoSQL matrix, Redis + Caching Handbook, `examples/13` (`34/34` + `184/184` tests pass); Hydrogen XFetch/KaTeX findings resolved. |
+| 6 | `architecture/security-identity` (Phase 6) | `agy` Neon (orchestrator) | `track/security-auth-phase6` | ✅ merged | Merged 2026-11-28 (`ee2042e`, `9e67c50`): Auth, JWT & OAuth 2.0/2.1 Handbook + Node.js/Express 5.3.0 (`58/58` tests) & Python/FastAPI 0.165.0 (`5/5` pytest) runnable proofs; Hydrogen cookie-clear finding resolved. |
+| 6 | `algorithms/ml-foundations` | `agy` Neon (orchestrator) | `track/ml-foundations` | ✅ merged | Merged 2026-11-28 (`e5b001a`): 6 modules, 9 animated SVGs, 10 TS + 5 Python pytest (`numpy 2.5.5`, `scipy 1.18.1`, `scikit-learn 1.9.1`, `pydantic 2.14.4`), `Q-MLF-001`–`060` + mock; Hydrogen & `beam-free` verified. |
+| 6 | `architecture/ai-engineering` | `agy` Neon (orchestrator) | `track/ai-engineering` | ✅ merged | Merged 2026-11-28 (`faf5608`, `ef90473`): 7 modules, 3 animated SVGs, 11/11 TS tests, `Q-AIE-001`–`060` + mock; Hydrogen MCP `-32601` / `(unverified)` / version-history findings resolved. |
 
-## Progress Summary (as of 2026-11-20)
+## Progress Summary (as of 2026-11-28)
 
-- **Total Tracks**: 31
-- **Completed & Merged**: 31 tracks (Phase 1: 10/10, Phase 2: 7/7, Phase 3: 6/6, Phase 4: 6/6, Phase 5: 2/2)
+- **Total Tracks**: 33
+- **Completed & Merged**: 33 tracks (Phase 1: 10/10, Phase 2: 7/7, Phase 3: 6/6, Phase 4: 6/6, Phase 5: 2/2, Phase 6: 2 new tracks + 5 enriched tracks)
 - **Remaining**: 0 tracks
-- **Total Authored Modules**: 387 modules (all verified, >= 400 lines average, with interview drills)
-- **Total Exam Questions**: 2,335+ questions (all original with distractor rationales and mock exams)
-- **Verification Gates**: 100% clean (`npm run check` green, 0 broken links, 0 pending links, 0 table/katex/mermaid errors)
+- **Total Authored Modules**: 401 modules (all verified, with interview drills)
+- **Total Exam Questions**: 2,676+ questions (all original with distractor rationales and mock exams)
+- **Verification Gates**: 100% clean (`npm run check` green, 0 broken links, 0 pending links, 0 table/katex/mermaid/svg errors)
 
 ## Dependencies
 

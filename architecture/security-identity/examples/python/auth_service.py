@@ -5,6 +5,7 @@ import hashlib
 import hmac
 import secrets
 import time
+import urllib.parse
 from dataclasses import dataclass, field
 from typing import Annotated, Any
 
@@ -20,6 +21,7 @@ CLIENT_ID = "bff-web-app"
 REDIRECT_URI = "https://app.example.com/auth/callback"
 API_AUDIENCE = "https://api.example.com"
 SESSION_COOKIE = "__Host-sid"
+TX_COOKIE = "__Host-auth-tx"
 
 
 def b64url(data: bytes) -> str:
@@ -259,30 +261,55 @@ def create_app(auth_server: InMemoryAuthorizationServer | None = None) -> FastAP
         return claims
 
     @app.get("/auth/login")
-    def auth_login() -> dict[str, str]:
+    def auth_login() -> Response:
+        tx_id = secrets.token_urlsafe(24)
         state = secrets.token_urlsafe(24)
         nonce = secrets.token_urlsafe(24)
         verifier = secrets.token_urlsafe(48)
         challenge = compute_s256_challenge(verifier)
-        pending_auth_tx[state] = {"nonce": nonce, "verifier": verifier}
-        return {
-            "authorization_url": (
-                f"{AS_ISSUER}/authorize?response_type=code&client_id={CLIENT_ID}"
-                f"&redirect_uri={REDIRECT_URI}&state={state}&nonce={nonce}"
-                f"&code_challenge={challenge}&code_challenge_method=S256"
-            ),
-            "state": state,
-            "nonce": nonce,
-            "code_challenge": challenge,
-        }
+        pending_auth_tx[tx_id] = {"state": state, "nonce": nonce, "verifier": verifier}
+        query = urllib.parse.urlencode(
+            {
+                "response_type": "code",
+                "client_id": CLIENT_ID,
+                "redirect_uri": REDIRECT_URI,
+                "state": state,
+                "nonce": nonce,
+                "code_challenge": challenge,
+                "code_challenge_method": "S256",
+            }
+        )
+        response = JSONResponse(
+            {
+                "authorization_url": f"{AS_ISSUER}/authorize?{query}",
+                "state": state,
+                "nonce": nonce,
+                "code_challenge": challenge,
+            }
+        )
+        response.set_cookie(
+            key=TX_COOKIE,
+            value=tx_id,
+            httponly=True,
+            secure=True,
+            samesite="lax",
+            path="/",
+            max_age=300,
+        )
+        return response
 
     @app.get("/auth/callback")
-    def auth_callback(code: str, state: str, iss: str) -> Response:
+    def auth_callback(
+        code: str,
+        state: str,
+        iss: str,
+        tx_id: Annotated[str | None, Cookie(alias=TX_COOKIE)] = None,
+    ) -> Response:
         if iss != AS_ISSUER:
             raise HTTPException(status_code=400, detail="issuer_mixup_detected")
 
-        tx = pending_auth_tx.pop(state, None)
-        if tx is None:
+        tx = pending_auth_tx.pop(tx_id, None) if tx_id is not None else None
+        if tx is None or not hmac.compare_digest(tx["state"], state):
             raise HTTPException(status_code=400, detail="invalid_or_replayed_state")
 
         tokens = as_instance.exchange_code(
@@ -318,6 +345,7 @@ def create_app(auth_server: InMemoryAuthorizationServer | None = None) -> FastAP
         )
 
         response = JSONResponse({"authenticated": True, "sub": id_claims["sub"]})
+        response.delete_cookie(TX_COOKIE, path="/")
         response.set_cookie(
             key=SESSION_COOKIE,
             value=sid,
@@ -353,19 +381,37 @@ def create_app(auth_server: InMemoryAuthorizationServer | None = None) -> FastAP
     def bff_create_order(
         order: OrderPayload,
         sid: Annotated[str | None, Cookie(alias=SESSION_COOKIE)] = None,
-    ) -> dict[str, Any]:
+    ) -> Response:
         if sid is None or sid not in sessions:
             raise HTTPException(status_code=401, detail="unauthenticated")
 
         session = sessions[sid]
-        claims = jwt.decode(
-            session.access_token,
-            as_instance.public_key,
-            algorithms=["RS256"],
-            audience=API_AUDIENCE,
-            issuer=AS_ISSUER,
-        )
-        return {"order": order.model_dump(), "owner": claims["sub"], "via": "bff"}
+        try:
+            claims = jwt.decode(
+                session.access_token,
+                as_instance.public_key,
+                algorithms=["RS256"],
+                audience=API_AUDIENCE,
+                issuer=AS_ISSUER,
+            )
+        except jwt.ExpiredSignatureError:
+            try:
+                rotated = as_instance.rotate_refresh_token(session.refresh_token)
+            except HTTPException:
+                sessions.pop(sid, None)
+                resp = JSONResponse({"detail": "session_revoked_on_reuse"}, status_code=401)
+                resp.delete_cookie(SESSION_COOKIE, path="/")
+                return resp
+            session.access_token = rotated["access_token"]
+            session.refresh_token = rotated["refresh_token"]
+            claims = jwt.decode(
+                session.access_token,
+                as_instance.public_key,
+                algorithms=["RS256"],
+                audience=API_AUDIENCE,
+                issuer=AS_ISSUER,
+            )
+        return JSONResponse({"order": order.model_dump(), "owner": claims["sub"], "via": "bff"})
 
     @app.get("/api/orders")
     def resource_list_orders(

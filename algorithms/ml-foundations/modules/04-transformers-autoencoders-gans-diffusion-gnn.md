@@ -88,13 +88,17 @@ Closed-form noising enables $O(1)$ sampling of any step $t$ directly from $\math
 
 $$\mathbf{x}_t = \sqrt{\bar\alpha_t}\,\mathbf{x}_0 + \sqrt{1 - \bar\alpha_t}\,\boldsymbol{\varepsilon}, \qquad \boldsymbol{\varepsilon} \sim \mathcal{N}(\mathbf{0}, I)$$
 
-The learned reverse chain $p_\theta(\mathbf{x}_{t-1} \mid \mathbf{x}*t) = \mathcal{N}(\mathbf{x}*{t-1};\, \boldsymbol{\mu}_\theta(\mathbf{x}_t, t),\, \sigma_t^2 I)$ predicts the injected noise $\boldsymbol{\varepsilon}_\theta(\mathbf{x}_t, t)$:
+The learned reverse chain predicts the injected noise $\varepsilon_\theta(x_t, t)$:
 
-$$\boldsymbol{\mu}_\theta(\mathbf{x}_t, t) = \frac{1}{\sqrt{\alpha_t}}\left(\mathbf{x}_t - \frac{\beta_t}{\sqrt{1 - \bar\alpha_t}}\,\boldsymbol{\varepsilon}_\theta(\mathbf{x}_t, t)\right)$$
+$$p_\theta(\mathbf{x}_{t-1} \mid \mathbf{x}_t) = \mathcal{N}\!\left(\mathbf{x}_{t-1};\, \boldsymbol{\mu}_\theta(\mathbf{x}_t, t),\, \sigma_t^2 I\right), \qquad \boldsymbol{\mu}_\theta(\mathbf{x}_t, t) = \frac{1}{\sqrt{\alpha_t}}\left(\mathbf{x}_t - \frac{\beta_t}{\sqrt{1 - \bar\alpha_t}}\,\boldsymbol{\varepsilon}_\theta(\mathbf{x}_t, t)\right)$$
 
 $$\mathcal{L}_{\text{simple}} = \mathbb{E}_{t, \mathbf{x}_0, \boldsymbol{\varepsilon}}\!\left[\left\lVert \boldsymbol{\varepsilon} - \boldsymbol{\varepsilon}_\theta\!\left(\sqrt{\bar\alpha_t}\,\mathbf{x}_0 + \sqrt{1 - \bar\alpha_t}\,\boldsymbol{\varepsilon},\; t\right) \right\rVert_2^2\right]$$
 
-Here $\mathcal{L}_{\text{simple}}$ is a $\lambda_t$-reweighted simplification of the true variational bound $\mathcal{L}_{\text{vlb}}$ over posteriors $q(\mathbf{x}_{t-1}\mid\mathbf{x}_t,\mathbf{x}_0) = \mathcal{N}(\tilde{\boldsymbol{\mu}}*t, \tilde\beta_t I)$ with $\tilde\beta_t = \frac{1-\bar\alpha*{t-1}}{1-\bar\alpha_t}\beta_t$. At inference, ancestral sampling iterates $\mathbf{x}_{t-1} = \frac{1}{\sqrt{\alpha_t}}(\mathbf{x}_t - \frac{1-\alpha_t}{\sqrt{1-\bar\alpha_t}}\boldsymbol{\varepsilon}_\theta) + \sigma_t\mathbf{z}$ from $t=T$ down to $1$ (or faster via deterministic DDIM/flow-matching ODE solvers).
+Here $\mathcal{L}_{\text{simple}}$ is a $\lambda_t$-reweighted simplification of the true variational bound $\mathcal{L}_{\text{vlb}}$ over posteriors with variance $\tilde\beta_t = (1-\bar\alpha_{t-1})\beta_t / (1-\bar\alpha_t)$:
+
+$$q(\mathbf{x}_{t-1}\mid\mathbf{x}_t,\mathbf{x}_0) = \mathcal{N}\!\left(\tilde{\boldsymbol{\mu}}_t,\, \tilde\beta_t I\right), \qquad \mathbf{x}_{t-1} = \frac{1}{\sqrt{\alpha_t}}\left(\mathbf{x}_t - \frac{1-\alpha_t}{\sqrt{1-\bar\alpha_t}}\boldsymbol{\varepsilon}_\theta(\mathbf{x}_t, t)\right) + \sigma_t\mathbf{z}$$
+
+Ancestral sampling iterates from $t=T$ down to $1$ (or faster via deterministic DDIM/flow-matching ODE solvers).
 
 ---
 
@@ -143,7 +147,7 @@ Hidden layers concatenate $K$ attention heads while the output head averages the
 
 <details><summary>Answer</summary>
 
-With additive embeddings $(\mathbf{x}_m + PE_m)W_q$ and $(\mathbf{x}*n + PE_n)W_k$, the dot product expands into four cross-terms including content-position noise $PE_m W_q W_k^{\top} \mathbf{x}*n^{\top}$. RoPE applies orthogonal block rotations $R*{\Theta,m}^d$ directly to projected queries and keys; since $(R*{\Theta,m}^d)^{\top} R_{\Theta,n}^d = R_{\Theta,n-m}^d$, only the relative offset $n - m$ survives inside $\langle \mathbf{q}_m, \mathbf{k}_n \rangle$.
+With additive embeddings $(x_m + PE_m)W_q$ and $(x_n + PE_n)W_k$, the dot product expands into four cross-terms including content-position noise $PE_m W_q W_k^\top x_n^\top$. RoPE applies orthogonal block rotations $R_{\Theta,m}^d$ directly to projected queries and keys; since $(R_{\Theta,m}^d)^\top R_{\Theta,n}^d = R_{\Theta,n-m}^d$, only the relative offset $n - m$ survives inside $\langle q_m, k_n \rangle$.
 
 </details>
 

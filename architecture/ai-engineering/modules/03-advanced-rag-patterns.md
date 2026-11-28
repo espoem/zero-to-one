@@ -2,6 +2,27 @@
 
 First-stage hybrid retrieval optimizes **recall** over millions of chunks in `< 20 ms`, but bi-encoders compress an entire passage into a single vector and treat queries literally. Production accuracy stalls unless retrieval addresses three structural limits: (1) single-vector compression loses fine token-level interactions (**Reranking** & **Small-to-Big**), (2) queries are underspecified or multi-hop (**Query Rewriting**, **Decomposition**, **HyDE**, **Agentic RAG**), and (3) dumping noisy top-20 chunks degrades synthesis (**Lost-in-the-Middle** & **Context Compression**, or global synthesis via **GraphRAG**).
 
+### Numbered Index of the 16 Core & Advanced RAG Patterns
+
+Combined across [Module 02](02-rag-pipeline-and-vector-retrieval.md) and this module (matching [`CHEATSHEET.md`](../CHEATSHEET.md#2-end-to-end-rag-pipeline--16-core-patterns)):
+
+1. **Fixed / Recursive Chunking** (Module 02 §3)
+2. **Structure-Aware Chunking** (Module 02 §3)
+3. **Semantic Chunking** (Module 02 §3)
+4. **Contextual Retrieval** (Module 02 §3.1)
+5. **MRL Embeddings** (Module 02 §2)
+6. **Metadata Pre-Filtering** (Module 02 §4)
+7. **Post-Filter Selectivity Trap** (Module 02 §4)
+8. **Filter Pushdown (HNSW)** (Module 02 §4)
+9. **Hybrid Search + RRF** (Module 02 §5)
+10. **Cross-Encoder Reranking** (§1 below)
+11. **ColBERT Late Interaction (MaxSim)** (§1 below)
+12. **Small-to-Big Retrieval** (§2 below)
+13. **GraphRAG** (§3 below)
+14. **Lost-in-the-Middle Context Compression** (§4 below)
+15. **Query Rewriting & Decomposition** (§5 below)
+16. **HyDE & Agentic RAG** (§5 below)
+
 ---
 
 ## 1. Two-Stage Reranking: Cross-Encoders & ColBERT Late Interaction
@@ -32,7 +53,7 @@ Dense embeddings degrade when a `1,200`-token chunk covers four subtopics (mean 
 
 ## 3. GraphRAG: Entity Graphs, Leiden Communities & Global Queries
 
-Vector similarity fails on **global sensemaking** questions (`"What are the top 5 recurring compliance risks across all 4,000 incident postmortems?"`) because no single chunk contains the aggregate answer. **GraphRAG** (Edge et al., `arXiv:2404.16130`, v2 2025-02-19; Microsoft `graphrag` `3.3.0`, in maintenance mode since 2025) solves global queries through hierarchical community summarization:
+Vector similarity fails on **global sensemaking** questions (`"What are the top 5 recurring compliance risks across all 4,000 incident postmortems?"`) because no single chunk contains the aggregate answer. **GraphRAG** (Edge et al., [`arXiv:2404.16130`](https://arxiv.org/abs/2404.16130); Microsoft [`graphrag`](https://github.com/microsoft/graphrag) `3.3.0`, maintenance status `(unverified)`) solves global queries through hierarchical community summarization:
 
 ```mermaid
 flowchart LR

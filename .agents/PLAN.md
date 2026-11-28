@@ -1,6 +1,6 @@
 # Zero-to-One — Master Plan v1 (2026-10-28)
 
-Status: **COMPLETE (31/31 tracks)**. Phases 0–5 (including the Functional Programming & Scala 3 expansion) are complete with `LINK_CHECK_PENDING` cleared and every verification gate green.
+Status: **COMPLETE (33/33 tracks)**. Phases 0–6 (including ML Foundations, AI Engineering, and Phase 6 enrichments) are complete with `LINK_CHECK_PENDING` cleared and every verification gate green.
 
 Inputs: six research dossiers in `.agents/research/` (A-frontend, B-data, C-runtimes, D-cs, E-platform, F-cloud). Their versions were checked against primary sources on 2026-10-27/28. Claims they could not check are marked `(unverified)` and **must be re-verified by the authoring agent before they are taught**.
 
@@ -73,7 +73,7 @@ Many tracks assume these foundations as prerequisites:
 | 3 | Platform and DevOps (`containers`, `kubernetes`, `terraform`, `argocd`, `gitlab-ci`, `observability`) | ✅ Merged | 6 tracks, 71 modules, 392 exam questions, all tests passing |
 | 4 | Cloud & System Design (`cloud-foundations`, `aws`, `gcp`, `cloudflare`, `azure`, `system-design`) | ✅ Merged | 6 of 6 tracks complete (74 modules, 520 exam questions), all tests passing |
 | 5 | Functional Programming & Scala 3 (`functional-programming`, `scala`) | ✅ Merged | 2 tracks (22 modules, 130 exam questions, 63 TS + Scala 3 tests) grounded in _FP in Scala_ & updated to Scala 3.10.1 / 3.9 LTS |
-| 6 | AI Engineering, ML Foundations & Phase 6 Existing Track Enrichments (`ml-foundations`, `ai-engineering`, `system-design` M27/Templates, `networking` M13 LB, `data-systems`/`redis` Caching & DB map, `security-identity` Auth Handbook) | 🟦 In Progress | 2 new tracks + 5 targeted existing track enrichments covering all 17 Phase 6 blocks |
+| 6 | AI Engineering, ML Foundations & Phase 6 Existing Track Enrichments (`ml-foundations`, `ai-engineering`, `system-design` M27/Templates, `networking` M13 LB, `data-systems`/`redis` Caching & DB map, `security-identity` Auth Handbook) | ✅ Merged | 2 new tracks (`algorithms/ml-foundations`, `architecture/ai-engineering`) + 5 existing track enrichments covering all 17 Phase 6 blocks, all tests & checks green |
 
 ### Phase 4 Remaining Tracks & Missing Deliverables
 

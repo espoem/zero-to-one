@@ -45,7 +45,7 @@ $$M_{\text{KV}} = 2\,L\,n_{kv}\,d_h\,b\,T\,B$$
 | **RTN PTQ** | INT8 / FP8 | Uniform affine $\mathrm{clamp}(\lfloor w/s \rceil + z, q_{\min}, q_{\max})$ | Seconds (no grad) | Near-lossless at 8-bit; collapses sharply below 4-bit |
 | **QAT (STE)** | INT4 / INT2 | Forward fake-quant + backward $\partial\mathcal{L}/\partial w \approx \partial\mathcal{L}/\partial \hat w$ | Full training / FT budget | Best <4-bit accuracy, expensive pipeline |
 | **GPTQ** | INT4 / INT3 | Layer-wise Hessian $\mathbf{H}=2XX^\top$; push residual $\boldsymbol{\delta}$ to unquantized columns | ~4 GPU-h for 175B | Overfits calibration domain if set too narrow |
-| **AWQ** | INT4 | Activation-salient scaling $s_j = (\max\lvert X_{:,j}\rvert)^\alpha$, protect ~1% salient weights | Minutes (grid search $\alpha$) | Zero weight reconstruction; generalizes OOD cleanly |
+| **AWQ** | INT4 | Activation-salient scaling $s_j = (\mathrm{mean}\lvert X_{:,j}\rvert)^\alpha$, protect ~1% salient weights | Minutes (grid search $\alpha$) | Zero weight reconstruction; generalizes OOD cleanly |
 
 ---
 

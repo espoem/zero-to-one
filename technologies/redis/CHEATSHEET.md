@@ -81,7 +81,7 @@ Policies: `allkeys-lru`, `volatile-lru`, `allkeys-lfu`, `volatile-lfu` (4.0+), `
 | **Write-behind** | `SET k v` + `XADD` stream; background consumer flushes SoT asynchronously | Coalesces bursts; crash before flush loses acked writes |
 | **Write-around** | Write SoT directly, bypass cache (`no-write-allocate`); populate only on read miss (`DEL k` if stale copy may exist) | Prevents cold-write cache pollution; first read after write always misses |
 | **Refresh-ahead** | Return warm entry; refresh asynchronously before expiry via XFetch or soft-TTL | Smooths hot-key p99; wasted refreshes if key goes cold |
-| **Event invalidation (CDC)** | Debezium tails DB WAL → key-partitioned Kafka → worker runs `DEL`/`UNLINK` (or versioned `SET ... IFDEQ`) | Survives app crashes; async lag requires idempotency and per-key order |
+| **Event invalidation (CDC)** | Debezium tails DB WAL → key-partitioned Kafka → worker runs `DEL`/`UNLINK` (or Lua/Function version check, with `SET ... IFDEQ` on exact old value CAS) | Survives app crashes; async lag requires idempotency and per-key order |
 
 - **Eviction policies for caches**: use `allkeys-lru` (recency), `allkeys-lfu` (Zipfian hot sets; tune `lfu-log-factor` / `lfu-decay-time`), or `allkeys-lrm` (8.6+, Least Recently Modified). Never use `noeviction` on a cache (`-OOM` turns into 100% SoT misses if errors fail open), and never share an instance between cache and durable state.
 - **Stampede, coalescing & lock recipes**:

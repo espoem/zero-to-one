@@ -42,7 +42,7 @@ Harness flow: `User Goal → Harness (Sandbox, Budgets, Policy) → Agent Loop (
 | # | Metric | Exact Formula | Operational Target / Alert |
 | :-: | :-- | :-- | :-- |
 | 1 | **Task Success Rate** | $\text{successful tasks} / \text{total tasks}$ | Track by task tier against golden rubric (`>= 85%` prod gate). |
-| 2 | **Tool Accuracy** | $\text{correct tool calls} / \text{total tool calls}$ | Measure both tool name and schema-valid argument F1 (`>= 95%`). |
+| 2 | **Tool Accuracy** | $\text{correct tool calls} / \text{total tool calls}$ | Measure both tool name and schema-valid argument accuracy (`>= 95%`). |
 | 3 | **Steps Per Task** | $\frac{1}{N}\sum_{i=1}^{N} \text{steps}_i$ (track p50 / p95) | Cap $S_{\max}$ (`8–15`); alert on p95 upward drift or cycle hashes. |
 | 4 | **Escalation Rate** | $\text{escalated to human} / \text{total tasks}$ | Must fit reviewer staffing capacity (`maxHitlQueueDepth`). |
 | 5 | **Guardrail Hit Rate** | $\text{blocked or rewritten actions} / \text{total actions}$ | Slice by `policy_id` to detect active attacks vs. broken prompts. |
@@ -64,9 +64,9 @@ Harness flow: `User Goal → Harness (Sandbox, Budgets, Policy) → Agent Loop (
 | :-: | :-- | :-- |
 | **1. Red Teaming** | Automated adversarial probes across direct/indirect injection & tool abuse | Assert on **action traces**, maintain attack regression corpus |
 | **2. Guardrails + Permissions** | Validator Sandwich (Top/Bottom Bun), least-privilege tool allow-lists, HITL | `OWASP LLM05` / `LLM06`, `OWASP ASI02` / `ASI03` |
-| **3. Injection Detection** | Structural `<untrusted_data>` isolation + classifier screening | `OWASP LLM01`, `MITRE ATLAS AML.T0051.001` |
+| **3. Injection Detection** | Structural `<untrusted_context>` isolation + classifier screening | `OWASP LLM01`, `MITRE ATLAS AML.T0051.001` |
 | **4. Model Scanning** | Static bytecode/opcode inspection before deserialization; prefer `safetensors` | `ModelScan 0.8.8` (exit `1` on findings), `torch.load(..., weights_only=True)` |
-| **5. Secrets + ML-BOM** | Zero secrets in prompts/logs; signed model + dataset provenance | `CycloneDX 1.7` (`ECMA-424`), `modelCard` + `data` components |
-| **6. Policy + Access** | Session-bound `tenantId`, ABAC/ReBAC ACL pre-filters, OPA/Cedar gates | `OWASP LLM02` / `LLM08`, `OWASP ASI03` |
-| **7. Monitoring** | OTel GenAI spans (`invoke_agent → chat → execute_tool`), `NO_CONTENT` default | `OTEL_INSTRUMENTATION_GENAI_CAPTURE_CONTENT`, `AML.M0024` |
+| **5. Secrets + ML-BOM** | Zero secrets in prompts/logs; signed model + dataset provenance | `CycloneDX 1.7` (`ECMA-424`), `modelCard` + `data` (`dataset`) components |
+| **6. Policy + Access** | Session-bound `tenantId`, ABAC/ReBAC ACL pre-filters, OPA/Cedar gates | `OWASP LLM02` / `LLM08:2025` / `LLM09:2026`, `OWASP ASI03` |
+| **7. Monitoring** | OTel GenAI spans (`invoke_agent {agent}` → `chat {model}` → `execute_tool {tool}`), `NO_CONTENT` default | `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT`, `AML.M0024` |
 | **8. Governance Frameworks** | Risk mapping, continuous measurement, and compliance accountability | **OWASP LLM 2025/2026**, **OWASP Agentic 2026**, **NIST AI RMF 1.0 + 600-1**, **MITRE ATLAS v2026.11** |

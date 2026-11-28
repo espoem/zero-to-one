@@ -16,7 +16,7 @@ Modern foundation models do not process raw Unicode characters or whitespace-spl
 At inference time, encoding is greedy and deterministic given a fixed merge rank table, which produces three subtle engineering consequences:
 
 1. **Non-Uniform Token Density Across Languages and Syntax**: English prose averages `~4` characters per token, whereas minified JSON, UUIDs, non-Latin scripts, or dense whitespace can expand by `2x–4x`, silently exhausting input budgets and inflating quadratic attention/prefill compute.
-2. **Leading-Space Sensitivity**: `"hello"` and `" hello"` map to different token IDs (`"Ġhello"` vs `"hello"`), which is why trailing whitespace at the end of a prompt alters next-token probability distributions.
+2. **Leading-Space Sensitivity**: `"hello"` and `" hello"` map to different token IDs (`"hello"` vs `"Ġhello"`), which is why trailing whitespace at the end of a prompt alters next-token probability distributions.
 3. **Byte-Boundary Artifacts**: Arithmetic (`"12345"` split into `["123", "45"]`), character counting, and reversal tasks fail disproportionately because the model never observes individual characters directly unless spelled out or computed via tools.
 
 ### 1.2 Logits, Softmax, and Sampling Controls

@@ -26,7 +26,7 @@ Why do identical LLM requests with `temperature = 0` still occasionally produce 
 - Why not A: BPE merge tables are deterministic at inference time.
 - Why not C: `temperature = 0` is honored as greedy `argmax` logits, not clamped upward by SDKs.
 - Why not D: KV-cache eviction affects latency/recomputation, not model weights.
-- Ref: [modules/01-llm-fundamentals-prompt-and-context-engineering.md](../modules/01-llm-fundamentals-prompt-and-context-engineering.md), https://arxiv.org/abs/2309.06180
+- Ref: [modules/01-llm-fundamentals-prompt-and-context-engineering.md](../modules/01-llm-fundamentals-prompt-and-context-engineering.md), https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/
 
 </details>
 
@@ -35,16 +35,16 @@ Why do identical LLM requests with `temperature = 0` still occasionally produce 
 How does `min-p` sampling improve output coherence at higher temperatures compared to static `top-k` truncation?
 
 - A) `min-p` replaces `softmax` with deterministic greedy selection after token 10.
-- B) `min-p` scales the probability cutoff dynamically relative to the highest-probability token ($p_{\min} \cdot P_{\max}$), pruning flat tail noise when a confident mode exists while preserving valid alternatives when entropy is high.
-- C) `min-p` forces the model to emit JSON Schema keys before reasoning tokens.
+- B) `min-p` forces the model to emit JSON Schema keys before reasoning tokens.
+- C) `min-p` scales the probability cutoff dynamically relative to the highest-probability token ($p_{\min} \cdot P_{\max}$), pruning flat tail noise when a confident mode exists while preserving valid alternatives when entropy is high.
 - D) `min-p` guarantees zero hallucinations regardless of prompt quality.
 
 <details><summary>Answer</summary>
 
-**B.** Scaling the truncation threshold as $p_{\min} \cdot P_{\max}$ adapts automatically to distribution sharpness, avoiding both overly narrow cuts during uncertain steps and long-tail nonsense during confident steps.
+**C.** Scaling the truncation threshold as $p_{\min} \cdot P_{\max}$ adapts automatically to distribution sharpness, avoiding both overly narrow cuts during uncertain steps and long-tail nonsense during confident steps.
 
 - Why not A: `min-p` is a stochastic support-filtering rule applied at every decode step, not a switch to greedy decoding.
-- Why not C: Token masking for JSON schemas is handled by CFG/FSM decoders, not `min-p`.
+- Why not B: Token masking for JSON schemas is handled by CFG/FSM decoders, not `min-p`.
 - Why not D: Sampling parameters adjust token diversity; they cannot verify external factual truth.
 - Ref: [modules/01-llm-fundamentals-prompt-and-context-engineering.md](../modules/01-llm-fundamentals-prompt-and-context-engineering.md), https://arxiv.org/abs/2407.01082
 
@@ -95,17 +95,17 @@ Which failure mode can **still** bypass grammar-constrained JSON decoding (`CFG`
 In a structured classification schema containing `"reasoning"` and `"decision"`, why should `"reasoning"` appear **before** `"decision"` in property order?
 
 - A) JSON parsers read keys right-to-left during `JSON.parse`.
-- B) Autoregressive generation conditions each token strictly on preceding tokens, so emitting `"reasoning"` first lets intermediate analysis inform `"decision"` rather than forcing post-hoc rationalization of an already committed label.
+- B) Placing `"decision"` last reduces output token pricing by 50%.
 - C) Grammar-constrained engines require alphabetical key ordering to compile pushdown automata.
-- D) Placing `"decision"` last reduces output token pricing by 50%.
+- D) Autoregressive generation conditions each token strictly on preceding tokens, so emitting `"reasoning"` first lets intermediate analysis inform `"decision"` rather than forcing post-hoc rationalization of an already committed label.
 
 <details><summary>Answer</summary>
 
-**B.** Causal transformers cannot revise earlier tokens; placing `"decision"` first locks the classification before the model computes supporting reasoning tokens.
+**D.** Causal transformers cannot revise earlier tokens; placing `"decision"` first locks the classification before the model computes supporting reasoning tokens.
 
 - Why not A: `JSON.parse` order does not affect model reasoning; token generation order does.
+- Why not B: Token billing depends on total output token count, not key position.
 - Why not C: CFG/FSM compilers respect the schema's declared order without requiring alphabetical sorting.
-- Why not D: Token billing depends on total output token count, not key position.
 - Ref: [modules/01-llm-fundamentals-prompt-and-context-engineering.md](../modules/01-llm-fundamentals-prompt-and-context-engineering.md), https://platform.openai.com/docs/guides/structured-outputs
 
 </details>
@@ -178,16 +178,16 @@ Which context-assembly ordering maximizes prompt prefix cache reuse while isolat
 How does Matryoshka Representation Learning (MRL) allow truncating a `3072`-dimensional embedding down to `768` dimensions without retraining?
 
 - A) MRL sorts embedding coordinates by magnitude after training via PCA.
-- B) MRL optimizes a weighted multi-scale training loss across nested prefix dimensions ($\sum_{m \in \mathcal{M}} c_m \mathcal{L}(f(x)_{1:m}; y)$) so early coordinates pack coarse semantics and later coordinates add fine detail.
-- C) MRL discards every fourth coordinate using hash projection at query time.
+- B) MRL discards every fourth coordinate using hash projection at query time.
+- C) MRL optimizes a weighted multi-scale training loss across nested prefix dimensions ($\sum_{m \in \mathcal{M}} c_m \mathcal{L}(f(x)_{1:m}; y)$) so early coordinates pack coarse semantics and later coordinates add fine detail.
 - D) MRL automatically maps `gemini-embedding-001` vectors into `gemini-embedding-2` space.
 
 <details><summary>Answer</summary>
 
-**B.** Training across nested prefixes forces the encoder to order semantic information coarse-to-fine, making truncated prefixes immediately searchable after L2 normalization.
+**C.** Training across nested prefixes forces the encoder to order semantic information coarse-to-fine, making truncated prefixes immediately searchable after L2 normalization.
 
 - Why not A: MRL is an end-to-end training objective, not post-hoc PCA.
-- Why not C: Strided subsampling destroys unaligned learned coordinates unless trained with MRL prefix nesting.
+- Why not B: Strided subsampling destroys unaligned learned coordinates unless trained with MRL prefix nesting.
 - Why not D: Distinct model versions occupy incompatible vector spaces and require full re-embedding.
 - Ref: [modules/02-rag-pipeline-and-vector-retrieval.md](../modules/02-rag-pipeline-and-vector-retrieval.md), https://arxiv.org/abs/2205.13147
 
@@ -218,17 +218,17 @@ A multi-tenant RAG index holds `1,000,000` chunks, of which `0.5%` belong to Ten
 Why does Reciprocal Rank Fusion (RRF) with $k = 60$ outperform naive raw score summation when combining Okapi BM25 and dense cosine retrieval?
 
 - A) RRF runs a cross-encoder GPU pass over all documents in the corpus.
-- B) BM25 scores are unbounded (`[0, ∞)`) while cosine scores sit in `[-1, 1]`; RRF ($\sum_r 1/(k + \text{rank}_r(d))$) fuses purely by ordinal rank, avoiding fragile per-query score normalization.
+- B) `k = 60` guarantees exact lexical matches always outrank dense matches by 60×.
 - C) RRF removes the need to store an inverted index.
-- D) `k = 60` guarantees exact lexical matches always outrank dense matches by 60×.
+- D) BM25 scores are unbounded (`[0, ∞)`) while cosine scores sit in `[-1, 1]`; RRF ($\sum_r 1/(k + \text{rank}_r(d))$) fuses purely by ordinal rank, avoiding fragile per-query score normalization.
 
 <details><summary>Answer</summary>
 
-**B.** Ordinal rank fusion makes heterogeneous retrieval scales directly comparable while damping extreme rank-1 outliers via the smoothing constant $k = 60$.
+**D.** Ordinal rank fusion makes heterogeneous retrieval scales directly comparable while damping extreme rank-1 outliers via the smoothing constant $k = 60$.
 
 - Why not A: RRF is a lightweight arithmetic merge over Stage 1 candidate IDs, not a neural model.
+- Why not B: A rank-1 document in either list contributes $1/61$; documents appearing high in _both_ lists score highest ($\approx 2/61$).
 - Why not C: BM25 still requires an inverted index to generate its ranked list.
-- Why not D: A rank-1 document in either list contributes $1/61$; documents appearing high in _both_ lists score highest ($\approx 2/61$).
 - Ref: [modules/02-rag-pipeline-and-vector-retrieval.md](../modules/02-rag-pipeline-and-vector-retrieval.md), https://dl.acm.org/doi/10.1145/1571941.1572114
 
 </details>
@@ -238,7 +238,7 @@ Why does Reciprocal Rank Fusion (RRF) with $k = 60$ outperform naive raw score s
 What operational improvement does Anthropic's Contextual Retrieval provide over standard overlapping chunking?
 
 - A) It replaces dense embeddings entirely with regular expressions.
-- B) It uses a prompt-cached LLM pass at ingest time to prepend a `50–100`-token situating summary to each chunk before both embedding and BM25 indexing, cutting top-20 retrieval failures by `35%–67%`.
+- B) It uses a prompt-cached LLM pass at ingest time to prepend a `50–100`-token situating summary to each chunk before both embedding and BM25 indexing, cutting top-20 retrieval failures by `35%` alone (`49%` with BM25, `67%` when combined with Stage 2 reranking).
 - C) It doubles HNSW edge factor `M` to avoid re-indexing on embedding upgrades.
 - D) It compresses all PDFs into `128`-bit binary hashes prior to generation.
 
@@ -278,16 +278,16 @@ Your team upgrades from `gemini-embedding-001` (`3072`-d) to `gemini-embedding-2
 Which document type is **most** severely damaged by naive fixed-token chunking (`500` tokens, `50` overlap) and benefits directly from structure-aware chunking?
 
 - A) Plain single-paragraph blog posts with no code.
-- B) Markdown technical specifications containing multi-column parameter tables and fenced code blocks.
-- C) Single-sentence FAQ lists where each line is 20 tokens.
+- B) Single-sentence FAQ lists where each line is 20 tokens.
+- C) Markdown technical specifications containing multi-column parameter tables and fenced code blocks.
 - D) Static English dictionary definitions.
 
 <details><summary>Answer</summary>
 
-**B.** Fixed cuts sever table headers from rows and split functions mid-body, destroying structural meaning; structure-aware chunkers split on headings, AST boundaries, and preserve table headers.
+**C.** Fixed cuts sever table headers from rows and split functions mid-body, destroying structural meaning; structure-aware chunkers split on headings, AST boundaries, and preserve table headers.
 
 - Why not A: Uniform prose paragraphs already fit fixed windows reasonably well.
-- Why not C: Short 20-token FAQ items fit cleanly inside single chunks.
+- Why not B: Short 20-token FAQ items fit cleanly inside single chunks.
 - Why not D: Short dictionary entries rarely span chunk boundaries.
 - Ref: [modules/02-rag-pipeline-and-vector-retrieval.md](../modules/02-rag-pipeline-and-vector-retrieval.md), https://www.anthropic.com/news/contextual-retrieval
 
@@ -298,17 +298,17 @@ Which document type is **most** severely damaged by naive fixed-token chunking (
 Approximately how much raw RAM does an in-memory `float32` HNSW index consume for $N = 10{,}000{,}000$ vectors at $D = 1536$ dimensions and $M = 16$ links (before MRL truncation or `int8` quantization)?
 
 - A) `~4 GB`
-- B) `~63 GB` (`~61.4 GB` raw `float32` vectors + `~1.7 GB` HNSW adjacency lists)
+- B) `~640 GB`
 - C) `~512 MB`
-- D) `~640 GB`
+- D) `~63 GB` (`~61.4 GB` raw `float32` vectors + `~1.7 GB` HNSW adjacency lists)
 
 <details><summary>Answer</summary>
 
-**B.** $10^7 \times 1536 \times 4\text{ bytes} = 61.44\text{ GB}$ for `float32` payloads alone, plus $\approx 10^7 \times 8 \times 16 \times 1.3 \approx 1.66\text{ GB}$ for HNSW graph edges (`~63 GB` total), which MRL (`768`-d) + `int8` quantization shrinks by `~8×`.
+**D.** $10^7 \times 1536 \times 4\text{ bytes} = 61.44\text{ GB}$ for `float32` payloads alone, plus $\approx 10^7 \times 8 \times 16 \times 1.3 \approx 1.66\text{ GB}$ for HNSW graph edges (`~63 GB` total), which MRL (`768`-d) + `int8` quantization shrinks by `~8×`.
 
 - Why not A: `4 GB` underestimates `float32` vector storage by more than `15×`.
+- Why not B: `640 GB` overstates storage by `~10×`.
 - Why not C: `512 MB` cannot even hold `1536`-d vectors for 100k documents in `float32`.
-- Why not D: `640 GB` overstates storage by `~10×`.
 - Ref: [modules/02-rag-pipeline-and-vector-retrieval.md](../modules/02-rag-pipeline-and-vector-retrieval.md), [../../data-systems/modules/03-indexing-theory-and-vector-search.md](../../data-systems/modules/03-indexing-theory-and-vector-search.md)
 
 </details>
@@ -335,16 +335,16 @@ In Okapi BM25, why does term frequency saturate via $\frac{f(q,D)(k_1+1)}{f(q,D)
 
 ### Q-AIE-017 · RAG Pipeline & Vector Retrieval · difficulty 2 · multi
 
-Which **two** design choices explain why `embed-v5.0-pro` and `embed-v5.0-fast` can be paired in a single RAG pipeline?
+Which **two** design mechanisms govern pairing `embed-v5.0-pro` and `embed-v5.0-fast` inside an asymmetric RAG architecture?
 
-- A) They share a compatible vector space, letting heavy offline documents use `pro` while latency-sensitive online queries use `fast`.
-- B) They support MRL dimensions (`256–2048`) and `int8`/binary quantization to reduce memory footprint.
+- A) They share an aligned compatible embedding space, allowing heavy offline documents to use `pro` while low-latency online queries use `fast`.
+- B) Both expose identical MRL truncation prefixes (`256–2048` dims) and quantization support so truncated query vectors align dimension-for-dimension with truncated stored document vectors.
 - C) One generates dense vectors while the other outputs SQL `WHERE` clauses.
 - D) `embed-v5.0-fast` bypasses access-control pre-filters automatically.
 
 <details><summary>Answer</summary>
 
-**A, B.** Shared asymmetric embedding space plus MRL/`int8`/binary compression allow optimizing ingestion quality and query latency/RAM together.
+**A, B.** Shared asymmetric vector space plus aligned MRL/quantized prefix dimensions let teams split ingestion quality and query latency without mismatched vector geometries.
 
 - Why not C: Both are embedding models, not SQL query generators.
 - Why not D: ACL filtering is a database/gateway responsibility, never handled inside an embedding model.
@@ -361,16 +361,16 @@ Which **two** design choices explain why `embed-v5.0-pro` and `embed-v5.0-fast` 
 How does ColBERT's MaxSim late-interaction scoring ($S(q,d) = \sum_{i \in q} \max_{j \in d} E_{q_i} \cdot E_{d_j}^\top$) improve upon single-vector bi-encoders without incurring full cross-encoder query latency?
 
 - A) It runs joint cross-attention over `[CLS] q [SEP] d [SEP]` across all 1M corpus chunks at query time.
-- B) It precomputes per-token document vectors offline and evaluates token-level maximum inner products at query time, preserving fine-grained term interactions without re-encoding documents online.
-- C) It replaces vector similarity with Levenshtein edit distance.
+- B) It replaces vector similarity with Levenshtein edit distance.
+- C) It precomputes per-token document vectors offline and evaluates token-level maximum inner products at query time, preserving fine-grained term interactions without re-encoding documents online.
 - D) It discards all stop words and runs exact regex matching.
 
 <details><summary>Answer</summary>
 
-**B.** Storing precomputed token representations offline lets ColBERT evaluate fine-grained query-to-document token alignments via fast matrix multiplications at query time.
+**C.** Storing precomputed token representations offline lets ColBERT evaluate fine-grained query-to-document token alignments via fast matrix multiplications at query time.
 
 - Why not A: Joint online cross-attention describes a Cross-Encoder, which is too slow for Stage 1 corpus-wide search.
-- Why not C: ColBERT operates over contextualized neural token embeddings, not character edit distance.
+- Why not B: ColBERT operates over contextualized neural token embeddings, not character edit distance.
 - Why not D: ColBERT preserves contextualized token embeddings rather than regex rules.
 - Ref: [modules/03-advanced-rag-patterns.md](../modules/03-advanced-rag-patterns.md), https://arxiv.org/abs/2004.12832
 
@@ -380,16 +380,16 @@ How does ColBERT's MaxSim late-interaction scoring ($S(q,d) = \sum_{i \in q} \ma
 
 What failure mode does **Small-to-Big (Parent-Document)** retrieval solve?
 
-- A) Small chunks (`128–256` tokens) match queries sharply in vector space but lack surrounding context during LLM synthesis; indexing child chunks while returning their `1,024`-token parent span solves both.
-- B) Parent documents are indexed directly as 50-page vectors to avoid chunking entirely.
+- A) Parent documents are indexed directly as 50-page vectors to avoid chunking entirely.
+- B) Small chunks (`128–256` tokens) match queries sharply in vector space but lack surrounding context during LLM synthesis; indexing child chunks while returning their `1,024`-token parent span solves both.
 - C) Small-to-Big retrieval eliminates the need for an LLM generator.
 - D) It converts unstructured PDFs into relational SQL foreign keys automatically.
 
 <details><summary>Answer</summary>
 
-**A.** Decoupling the small embedding unit from the larger generation context avoids semantic dilution in Stage 1 while giving the generator complete definitions and caveats in Stage 2.
+**B.** Decoupling the small embedding unit from the larger generation context avoids semantic dilution in Stage 1 while giving the generator complete definitions and caveats in Stage 2.
 
-- Why not B: Embedding 50-page blobs produces noisy averaged vectors with terrible recall.
+- Why not A: Embedding 50-page blobs produces noisy averaged vectors with terrible recall.
 - Why not C: An LLM still synthesizes the final response from returned parent spans.
 - Why not D: Parent IDs are simple document-store pointers, not inferred relational schemas.
 - Ref: [modules/03-advanced-rag-patterns.md](../modules/03-advanced-rag-patterns.md), https://docs.llamaindex.ai/en/stable/
@@ -421,17 +421,17 @@ An engineering VP asks: `"What are the five most common architectural root cause
 Based on Liu et al.'s **Lost-in-the-Middle** findings (`arXiv:2307.03172`), how should retrieved chunks be compressed and ordered in the prompt?
 
 - A) Always send at least `40` raw chunks sorted in ascending relevance order so the best chunk sits in the middle.
-- B) Prune/compress low-signal sentences and place the highest-relevance evidence at the **beginning** and **end** of the retrieved context block rather than burying it in the center.
+- B) Concatenate all chunks without separators so the LLM treats them as one paragraph.
 - C) Shuffle retrieved chunks randomly on every turn to prevent attention saturation.
-- D) Concatenate all chunks without separators so the LLM treats them as one paragraph.
+- D) Prune/compress low-signal sentences and place the highest-relevance evidence at the **beginning** and **end** of the retrieved context block rather than burying it in the center.
 
 <details><summary>Answer</summary>
 
-**B.** Long-context models exhibit a U-shaped attention curve favoring primacy and recency positions; aggressive reranking/compression plus placing top evidence at the edges prevents middle-context dropoff.
+**D.** Long-context models exhibit a U-shaped attention curve favoring primacy and recency positions; aggressive reranking/compression plus placing top evidence at the edges prevents middle-context dropoff.
 
 - Why not A: Placing the best evidence in the middle directly maximizes Lost-in-the-Middle degradation.
+- Why not B: Removing chunk delimiters destroys provenance and citation grounding.
 - Why not C: Random shuffling places critical evidence in the weak middle region unpredictably.
-- Why not D: Removing chunk delimiters destroys provenance and citation grounding.
 - Ref: [modules/03-advanced-rag-patterns.md](../modules/03-advanced-rag-patterns.md), https://arxiv.org/abs/2307.03172
 
 </details>
@@ -442,7 +442,7 @@ A user asks a technical support copilot: `"Compare the rate limits and SLA guara
 
 - A) **Query Decomposition** (splitting into independent sub-queries for Enterprise Tier and Starter Tier and merging both result sets before generation).
 - B) Lowering `top_p` to `0.1`.
-- C) Switching from cosine similarity to Euclidean distance without re-normalizing.
+- C) Switching from cosine similarity to L2 Euclidean distance over the same unit-normalized embeddings.
 - D) Disabling BM25.
 
 <details><summary>Answer</summary>
@@ -460,16 +460,16 @@ A user asks a technical support copilot: `"Compare the rate limits and SLA guara
 
 When does **HyDE** (Hypothetical Document Embeddings, Gao et al. 2022) **degrade** retrieval accuracy instead of improving it?
 
-- A) On conceptual natural-language questions where users phrase problems informally while docs use formal terminology.
-- B) When queries reference proprietary internal CLI flags, exact SKUs, or post-cutoff APIs absent from the LLM's pretraining weights, causing the hypothetical doc to hallucinate plausible wrong identifiers.
+- A) When queries reference proprietary internal CLI flags, exact SKUs, or post-cutoff APIs absent from the LLM's pretraining weights, causing the hypothetical doc to hallucinate plausible wrong identifiers.
+- B) On conceptual natural-language questions where users phrase problems informally while docs use formal terminology.
 - C) When the corpus uses MRL embeddings at `1536` dimensions.
 - D) Whenever Stage 2 cross-encoder reranking is enabled.
 
 <details><summary>Answer</summary>
 
-**B.** HyDE relies on parametric LLM knowledge to bridge vocabulary gaps; for private symbols or exact error codes, fabricated terms inside the synthetic document pull dense retrieval away from exact lexical matches.
+**A.** HyDE relies on parametric LLM knowledge to bridge vocabulary gaps; for private symbols or exact error codes, fabricated terms inside the synthetic document pull dense retrieval away from exact lexical matches.
 
-- Why not A: Bridging informal questions to formal domain prose is HyDE's core strength.
+- Why not B: Bridging informal questions to formal domain prose is HyDE's core strength.
 - Why not C: MRL embeddings work identically with real or synthetic document embeddings.
 - Why not D: Stage 2 reranking scores against the original query, which does not repair Stage 1 missed candidates.
 - Ref: [modules/03-advanced-rag-patterns.md](../modules/03-advanced-rag-patterns.md), https://arxiv.org/abs/2212.10496
@@ -481,16 +481,16 @@ When does **HyDE** (Hypothetical Document Embeddings, Gao et al. 2022) **degrade
 How does **Step-Back Prompting** improve retrieval on hyper-specific troubleshooting questions (e.g., `"Why did worker-node-7 crash with exit code 137 during backfill?"`)?
 
 - A) It skips retrieval and answers from pretraining weights.
-- B) It derives a higher-level conceptual query (`"Causes and diagnostics for container exit code 137 OOMKilled"`) and retrieves architectural principles alongside specific logs.
-- C) It forces the user to retype their question three times.
+- B) It forces the user to retype their question three times.
+- C) It derives a higher-level conceptual query (`"Causes and diagnostics for container exit code 137 OOMKilled"`) and retrieves architectural principles alongside specific logs.
 - D) It trims the prompt to 50 tokens to fit inside a single BPE merge.
 
 <details><summary>Answer</summary>
 
-**B.** Abstracting to the underlying concept retrieves foundational diagnostic rules that rarely contain transient instance names like `worker-node-7`.
+**C.** Abstracting to the underlying concept retrieves foundational diagnostic rules that rarely contain transient instance names like `worker-node-7`.
 
 - Why not A: Step-back prompting augments retrieval; it does not bypass it.
-- Why not C: The abstraction query is generated automatically by the model.
+- Why not B: The abstraction query is generated automatically by the model.
 - Why not D: 50 tokens has nothing to do with BPE merges or step-back reasoning.
 - Ref: [modules/03-advanced-rag-patterns.md](../modules/03-advanced-rag-patterns.md), https://arxiv.org/abs/2310.06117
 
@@ -524,17 +524,17 @@ Which **two** controls are essential when deploying **Agentic RAG** (`retrieve �
 In an Agent Harness, why must `SHA-256(toolName + canonicalArgs)` cycle detection be paired with hard `S_max` and `C_max` caps?
 
 - A) Because SHA-256 hashing cannot run inside Node.js.
-- B) Because an agent can alternate between two slightly different arguments (`page=1` vs `page=2` or oscillating tool pairs) that evade exact-duplicate detection while still burning unbounded steps and dollars.
+- B) Because `S_max` guarantees 100% tool-call accuracy.
 - C) Because `C_max` is only enforced by the MCP server, not the host harness.
-- D) Because `S_max` guarantees 100% tool-call accuracy.
+- D) Because an agent can alternate between two slightly different arguments (`page=1` vs `page=2` or oscillating tool pairs) that evade exact-duplicate detection while still burning unbounded steps and dollars.
 
 <details><summary>Answer</summary>
 
-**B.** Cycle hashing catches tight identical repeats immediately, while global step ($S_{\max}$), tool ($K_{\max}$), and dollar ($C_{\max}$) caps bound oscillating or drifting non-convergent trajectories.
+**D.** Cycle hashing catches tight identical repeats immediately, while global step ($S_{\max}$), tool ($K_{\max}$), and dollar ($C_{\max}$) caps bound oscillating or drifting non-convergent trajectories.
 
 - Why not A: Node.js `node:crypto` computes SHA-256 natively in microseconds.
+- Why not B: Step caps bound failure blast radius; they do not fix tool accuracy.
 - Why not C: Dollar and step budgets belong to the host harness envelope, not downstream MCP servers.
-- Why not D: Step caps bound failure blast radius; they do not fix tool accuracy.
 - Ref: [modules/04-agent-harness-and-orchestration-engineering.md](../modules/04-agent-harness-and-orchestration-engineering.md), [../../system-design/modules/25-reliable-ai-systems.md](../../system-design/modules/25-reliable-ai-systems.md)
 
 </details>
@@ -563,16 +563,16 @@ Under the **MCP 2026-07-28** specification, what JSON-RPC error code and HTTP st
 
 When an MCP 2026-07-28 tool response returns `resultType: "input_required"` with `requestState`, what requirement applies to the client's follow-up call carrying `inputResponses`?
 
-- A) The client must reuse the identical JSON-RPC `id` from the initial request.
-- B) The client must pass `inputResponses` and `requestState` using a **new** JSON-RPC `id`.
+- A) The client must pass `inputResponses` and `requestState` using a **new** JSON-RPC `id`.
+- B) The client must reuse the identical JSON-RPC `id` from the initial request.
 - C) The server stores the client's entire conversation history locally and drops `requestState`.
 - D) The client switches from JSON-RPC 2.0 to XML-RPC.
 
 <details><summary>Answer</summary>
 
-**B.** Because MCP 2026-07-28 is stateless per request, the MRTR continuation is a distinct JSON-RPC transaction that carries `inputResponses` + `requestState` under a fresh `id`.
+**A.** Because MCP 2026-07-28 is stateless per request, the MRTR continuation is a distinct JSON-RPC transaction that carries `inputResponses` + `requestState` under a fresh `id`.
 
-- Why not A: Reusing a completed request's JSON-RPC `id` violates JSON-RPC request correlation rules.
+- Why not B: Reusing a completed request's JSON-RPC `id` violates JSON-RPC request correlation rules.
 - Why not C: MCP servers are isolated and never retain full host conversation history.
 - Why not D: MCP 2026-07-28 operates strictly over JSON-RPC 2.0.
 - Ref: [modules/04-agent-harness-and-orchestration-engineering.md](../modules/04-agent-harness-and-orchestration-engineering.md), https://modelcontextprotocol.io/specification/2026-07-28/
@@ -584,16 +584,16 @@ When an MCP 2026-07-28 tool response returns `resultType: "input_required"` with
 Which three capabilities were **deprecated** in the MCP 2026-07-28 specification, and what replaced `resources/subscribe`?
 
 - A) `tools/call`, `resources/read`, and `prompts/get` were deprecated; replaced by `tools/exec`.
-- B) `sampling`, `roots`, and `logging` were deprecated; unified `subscriptions/listen` replaced `resources/subscribe`.
-- C) `elicitation/create` and `server/discover` were deprecated.
+- B) `elicitation/create` and `server/discover` were deprecated.
+- C) `sampling`, `roots`, and `logging` were deprecated; unified `subscriptions/listen` replaced `resources/subscribe`.
 - D) JSON-RPC `id` and `params` were deprecated.
 
 <details><summary>Answer</summary>
 
-**B.** MCP 2026-07-28 deprecated `sampling`, `roots`, and `logging` while introducing `server/discover`, unified `subscriptions/listen`, and explicit response caching (`ttlMs`, `cacheScope`).
+**C.** MCP 2026-07-28 deprecated `sampling`, `roots`, and `logging` while introducing `server/discover`, unified `subscriptions/listen`, and explicit response caching (`ttlMs`, `cacheScope`).
 
 - Why not A: Tools, resources, and prompts remain the three core server primitives.
-- Why not C: Both `elicitation/create` and `server/discover` are active features in 2026-07-28.
+- Why not B: Both `elicitation/create` and `server/discover` are active features in 2026-07-28.
 - Why not D: Standard JSON-RPC 2.0 fields remain mandatory.
 - Ref: [modules/04-agent-harness-and-orchestration-engineering.md](../modules/04-agent-harness-and-orchestration-engineering.md), https://modelcontextprotocol.io/specification/2026-07-28/deprecated
 
@@ -604,17 +604,17 @@ Which three capabilities were **deprecated** in the MCP 2026-07-28 specification
 Why does MCP 2026-07-28 prohibit servers from automatically dereferencing remote `$ref` URLs in JSON Schema 2020-12 tool definitions?
 
 - A) JSON Schema 2020-12 removed `$ref` syntax entirely.
-- B) Auto-fetching remote `$ref` URIs introduces Server-Side Request Forgery (SSRF) and unbounded recursion/DoS attack vectors.
+- B) `$ref` disables `tools/list` pagination.
 - C) Remote `$ref` URLs slow down BPE tokenization in the browser.
-- D) `$ref` disables `tools/list` pagination.
+- D) Auto-fetching remote `$ref` URIs introduces Server-Side Request Forgery (SSRF) and unbounded recursion/DoS attack vectors.
 
 <details><summary>Answer</summary>
 
-**B.** Fetching attacker-supplied remote schema URLs lets malicious descriptors probe internal cloud metadata services (`169.254.169.254`) or hang schema compilers with cyclic/deep `anyOf`/`$defs` graphs.
+**D.** Fetching attacker-supplied remote schema URLs lets malicious descriptors probe internal cloud metadata services (`169.254.169.254`) or hang schema compilers with cyclic/deep `anyOf`/`$defs` graphs.
 
 - Why not A: `$ref` exists in 2020-12 for local `$defs`, which must still be depth-bounded.
+- Why not B: Pagination is controlled by `tools/list` cursors, unrelated to `$ref`.
 - Why not C: Schema compilation occurs on hosts/servers, not inside the tokenizer.
-- Why not D: Pagination is controlled by `tools/list` cursors, unrelated to `$ref`.
 - Ref: [modules/04-agent-harness-and-orchestration-engineering.md](../modules/04-agent-harness-and-orchestration-engineering.md), https://modelcontextprotocol.io/specification/2026-07-28/server/tools
 
 </details>
@@ -623,16 +623,16 @@ Why does MCP 2026-07-28 prohibit servers from automatically dereferencing remote
 
 In LangGraph 1.x (`StateGraph`), what execution model governs parallel node branches and state merges, and how do you trigger dynamic fan-out?
 
-- A) Cooperative OS threads sharing unsynchronized global variables; fan-out uses `setTimeout`.
-- B) **Pregel / Bulk Synchronous Parallel (BSP) supersteps** with typed channel reducers; dynamic fan-out uses `Send(node, payload)`.
+- A) **Pregel / Bulk Synchronous Parallel (BSP) supersteps** with typed channel reducers; dynamic fan-out uses `Send(node, payload)`.
+- B) Cooperative OS threads sharing unsynchronized global variables; fan-out uses `setTimeout`.
 - C) Sequential FIFO queues with no shared state; fan-out is unsupported.
 - D) GraphQL subscriptions over WebSockets.
 
 <details><summary>Answer</summary>
 
-**B.** LangGraph executes graphs in deterministic Pregel BSP supersteps, merging parallel updates cleanly via channel reducers and supporting dynamic map-reduce fan-out via `Send`.
+**A.** LangGraph executes graphs in deterministic Pregel BSP supersteps, merging parallel updates cleanly via channel reducers and supporting dynamic map-reduce fan-out via `Send`.
 
-- Why not A: Unsynchronized global variables cause race conditions across concurrent branches.
+- Why not B: Unsynchronized global variables cause race conditions across concurrent branches.
 - Why not C: LangGraph natively supports cyclic loops and parallel fan-out/fan-in via `Send`.
 - Why not D: GraphQL has no relationship to LangGraph's Pregel runtime.
 - Ref: [modules/04-agent-harness-and-orchestration-engineering.md](../modules/04-agent-harness-and-orchestration-engineering.md), https://docs.langchain.com/oss/python/langgraph/overview
@@ -644,16 +644,16 @@ In LangGraph 1.x (`StateGraph`), what execution model governs parallel node bran
 How does LangGraph implement durable Human-in-the-Loop (HITL) approval without holding an HTTP worker or process open for hours?
 
 - A) Polling `while(true)` inside the tool function with `sleep(5000)`.
-- B) Calling `interrupt(payload)` snapshots the full graph state into the configured checkpointer and halts execution; a human operator later resumes cleanly via `Command(resume=approval)`.
-- C) Setting `temperature = 0` so the model pauses itself automatically.
+- B) Setting `temperature = 0` so the model pauses itself automatically.
+- C) Calling `interrupt(payload)` snapshots the full graph state into the configured checkpointer and halts execution; a human operator later resumes cleanly via `Command(resume=approval)`.
 - D) Raising an unhandled exception and relying on Kubernetes pod restarts.
 
 <details><summary>Answer</summary>
 
-**B.** Checkpointed `interrupt()` persists exact superstep state to durable storage (`BaseStore`/checkpointer), freeing all compute until `Command(resume=...)` arrives.
+**C.** Checkpointed `interrupt()` persists exact superstep state to durable checkpointer storage, freeing all compute until `Command(resume=...)` arrives.
 
 - Why not A: Busy-waiting ties up worker slots and loses state on container restarts.
-- Why not C: Temperature affects token sampling, not workflow persistence.
+- Why not B: Temperature affects token sampling, not workflow persistence.
 - Why not D: Crashing pods loses in-memory context and triggers retry storms.
 - Ref: [modules/04-agent-harness-and-orchestration-engineering.md](../modules/04-agent-harness-and-orchestration-engineering.md), https://reference.langchain.com/python/langgraph/
 
@@ -664,17 +664,17 @@ How does LangGraph implement durable Human-in-the-Loop (HITL) approval without h
 What distinguishes **episodic**, **semantic**, and **procedural** long-term memory in an agent's `BaseStore`?
 
 - A) Episodic stores static weights; semantic stores GPU logs; procedural stores HTTP cookies.
-- B) Episodic stores past execution trajectories and outcomes; semantic stores verified domain/user facts; procedural stores reusable workflows, instructions, and tool patterns.
+- B) All three are identical names for the raw context window.
 - C) Episodic expires after 1 HTTP request; semantic is stored in the browser DOM.
-- D) All three are identical names for the raw context window.
+- D) Episodic stores past execution trajectories and outcomes; semantic stores verified domain/user facts; procedural stores reusable workflows, instructions, and tool patterns.
 
 <details><summary>Answer</summary>
 
-**B.** Separating past run outcomes (episodic), structured factual assertions (semantic), and reusable operational skills (procedural) enables targeted retrieval instead of dumping noisy logs into every prompt.
+**D.** Separating past run outcomes (episodic), structured factual assertions (semantic), and reusable operational skills (procedural) enables targeted retrieval instead of dumping noisy logs into every prompt.
 
 - Why not A: Model weights and HTTP cookies are not `BaseStore` memory tiers.
+- Why not B: Memory tiers sit outside the finite context window and are selectively retrieved on demand.
 - Why not C: Long-term `BaseStore` memory persists across sessions, unlike single-request buffers.
-- Why not D: Memory tiers sit outside the finite context window and are selectively retrieved on demand.
 - Ref: [modules/04-agent-harness-and-orchestration-engineering.md](../modules/04-agent-harness-and-orchestration-engineering.md), https://docs.langchain.com/oss/python/langgraph/overview
 
 </details>
@@ -746,16 +746,16 @@ Across `100` agent runs, `80` succeed; the agent makes `250` total tool calls of
 
 A RAG evaluation retrieves 5 chunks whose binary relevance to the query is `[0, 0, 1, 1, 0]`. What is the Ragas **Context Precision@5** score?
 
-- A) `0.40`
-- B) `0.4167` ($\frac{1/3 + 2/4}{2} = \frac{5}{12}$)
+- A) `0.4167` ($\frac{1/3 + 2/4}{2} = \frac{5}{12}$)
+- B) `0.40`
 - C) `1.00`
 - D) `0.25`
 
 <details><summary>Answer</summary>
 
-**B.** At rank 3 (`v_3=1`), $\text{Precision@3} = 1/3$; at rank 4 (`v_4=1`), $\text{Precision@4} = 2/4 = 1/2$. Averaging over the `2` relevant items gives $(1/3 + 1/2)/2 = 5/12 \approx 0.4167$, penalizing the two noisy chunks at ranks 1–2.
+**A.** At rank 3 (`v_3=1`), $\text{Precision@3} = 1/3$; at rank 4 (`v_4=1`), $\text{Precision@4} = 2/4 = 1/2$. Averaging over the `2` relevant items gives $(1/3 + 1/2)/2 = 5/12 \approx 0.4167$, penalizing the two noisy chunks at ranks 1–2.
 
-- Why not A: `2/5 = 0.40` is unweighted Precision@5, which ignores rank ordering.
+- Why not B: `2/5 = 0.40` is unweighted Precision@5, which ignores rank ordering.
 - Why not C: `1.00` only occurs when all relevant chunks sit strictly at the top (`[1, 1, 0, 0, 0]`).
 - Why not D: `0.25` divides only the final precision by 2 instead of summing rank precisions.
 - Ref: [modules/05-agent-metrics-evaluations-and-benchmarking.md](../modules/05-agent-metrics-evaluations-and-benchmarking.md), https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/context_precision/
@@ -767,16 +767,16 @@ A RAG evaluation retrieves 5 chunks whose binary relevance to the query is `[0, 
 Which Ragas 0.4.4 metric detects when a generator LLM weaves memorized or fabricated facts into an otherwise helpful-sounding answer?
 
 - A) `Context Recall`
-- B) `Faithfulness` (supported answer claims divided by total answer claims against retrieved context)
-- C) `Answer Relevancy`
+- B) `Answer Relevancy`
+- C) `Faithfulness` (supported answer claims divided by total answer claims against retrieved context)
 - D) `Steps Per Task`
 
 <details><summary>Answer</summary>
 
-**B.** `Faithfulness` verifies claim-by-claim entailment strictly against the retrieved chunks, catching extrinsic hallucinations even when the response sounds relevant to the user question.
+**C.** `Faithfulness` verifies claim-by-claim entailment strictly against the retrieved chunks, catching extrinsic hallucinations even when the response sounds relevant to the user question.
 
 - Why not A: `Context Recall` measures whether the _retriever_ captured the reference answer's claims.
-- Why not C: `Answer Relevancy` measures similarity to the user prompt and can remain high even on hallucinated facts.
+- Why not B: `Answer Relevancy` measures similarity to the user prompt and can remain high even on hallucinated facts.
 - Why not D: `Steps Per Task` is an agent execution efficiency metric, not a RAG grounding metric.
 - Ref: [modules/05-agent-metrics-evaluations-and-benchmarking.md](../modules/05-agent-metrics-evaluations-and-benchmarking.md), https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/faithfulness/
 
@@ -787,17 +787,17 @@ Which Ragas 0.4.4 metric detects when a generator LLM weaves memorized or fabric
 Why do production agent evaluations score **both** trajectory and outcome instead of grading only the final assistant text?
 
 - A) Trajectory evals eliminate the need to run unit tests.
-- B) An agent can arrive at a plausible final message while executing unauthorized reads, looping inefficiently for 15 steps, or violating policy mid-run — defects invisible in final prose alone.
+- B) Trajectory evaluation reduces inference temperature to zero.
 - C) Final outcome assertions always have `0%` false positives.
-- D) Trajectory evaluation reduces inference temperature to zero.
+- D) An agent can arrive at a plausible final message while executing unauthorized reads, looping inefficiently for 15 steps, or violating policy mid-run — defects invisible in final prose alone.
 
 <details><summary>Answer</summary>
 
-**B.** Inspecting tool-call sequences alongside final state verifies cost efficiency, safety compliance, and step optimality rather than rewarding lucky or unsafe shortcuts.
+**D.** Inspecting tool-call sequences alongside final state verifies cost efficiency, safety compliance, and step optimality rather than rewarding lucky or unsafe shortcuts.
 
 - Why not A: Deterministic unit tests and outcome checks remain mandatory.
+- Why not B: Evaluation inspects recorded traces; it does not alter sampling temperature.
 - Why not C: Outcome assertions still miss wasted steps or unauthorized side-effect reads.
-- Why not D: Evaluation inspects recorded traces; it does not alter sampling temperature.
 - Ref: [modules/05-agent-metrics-evaluations-and-benchmarking.md](../modules/05-agent-metrics-evaluations-and-benchmarking.md), [../examples/02-agent-harness-and-metrics.test.ts](../examples/02-agent-harness-and-metrics.test.ts)
 
 </details>
@@ -825,19 +825,19 @@ Which **two** engineering controls neutralize **Position Bias** and **Self-Enhan
 
 Before trusting an LLM-as-a-Judge as a CI release gate, what statistical threshold against expert human annotations should be verified?
 
-- A) Raw percentage accuracy of at least `50%`.
-- B) Chance-corrected inter-annotator agreement (**Cohen's $\kappa \ge 0.75$**) on a stratified `100–300`-item calibration set.
+- A) Chance-corrected inter-annotator agreement (**Cohen's $\kappa \ge 0.75$**, Fleiss's "excellent" threshold) on a stratified `100–300`-item calibration set.
+- B) Raw percentage accuracy of at least `50%`.
 - C) Cosine similarity of `0.50` between judge reasoning tokens and the system prompt.
 - D) Zero variance across `1` single trial.
 
 <details><summary>Answer</summary>
 
-**B.** Cohen's $\kappa = (p_o - p_e)/(1 - p_e)$ corrects for chance agreement on imbalanced rubrics, confirming substantial human alignment ($\kappa \ge 0.75$).
+**A.** Cohen's $\kappa = (p_o - p_e)/(1 - p_e)$ corrects for chance agreement on imbalanced rubrics, confirming strong human alignment ($\kappa \ge 0.75$ meets Fleiss 1981 "excellent", above Landis & Koch 1977 `0.61` "substantial").
 
-- Why not A: `50%` raw agreement can occur by pure coin-flipping on binary labels.
+- Why not B: `50%` raw agreement can occur by pure coin-flipping on binary labels.
 - Why not C: Embedding similarity of judge prose does not validate rubric accuracy.
 - Why not D: A single trial cannot measure statistical reliability.
-- Ref: [modules/05-agent-metrics-evaluations-and-benchmarking.md](../modules/05-agent-metrics-evaluations-and-benchmarking.md), https://arxiv.org/abs/2306.05685
+- Ref: [modules/05-agent-metrics-evaluations-and-benchmarking.md](../modules/05-agent-metrics-evaluations-and-benchmarking.md), Fleiss (1981) _Statistical Methods for Rates and Proportions_, https://arxiv.org/abs/2306.05685
 
 </details>
 
@@ -846,18 +846,18 @@ Before trusting an LLM-as-a-Judge as a CI release gate, what statistical thresho
 Why does reporting `pass@5` overstate production reliability for a customer-facing support agent compared to `pass^5`?
 
 - A) `pass@5` only checks syntax, while `pass^5` measures token latency.
-- B) `pass@5` succeeds if **at least 1** of 5 stochastic attempts passes (`80%` per-run success yields `99.97%` `pass@5`), whereas `pass^5` requires **all 5** attempts to succeed (`0.8^5 = 32.8%`), reflecting single-shot user reliability.
-- C) `pass^5` ignores tool errors completely.
+- B) `pass^5` ignores tool errors completely.
+- C) `pass@5` succeeds if **at least 1** of 5 stochastic attempts passes (`80%` per-run success yields `99.97%` `pass@5`), whereas `pass^5` requires **all 5** attempts to succeed (`0.8^5 = 32.8%`), reflecting single-shot user reliability.
 - D) `pass@5` cannot be computed for models with `temperature > 0`.
 
 <details><summary>Answer</summary>
 
-**B.** Users experience one live run, not best-of-5 hidden retries; `pass^k` exposes inconsistency across repeated invocations that `pass@k` hides.
+**C.** Users experience one live run, not best-of-5 hidden retries; `pass^k` exposes inconsistency across repeated invocations that `pass@k` hides.
 
 - Why not A: Both metrics evaluate task pass rates, not syntax vs latency.
-- Why not C: Both apply the full task-success rubric to each trial.
+- Why not B: Both apply the full task-success rubric to each trial.
 - Why not D: `pass@k` specifically relies on stochastic variance (`temperature > 0`) to sample diverse attempts.
-- Ref: [modules/05-agent-metrics-evaluations-and-benchmarking.md](../modules/05-agent-metrics-evaluations-and-benchmarking.md), https://www.anthropic.com/research
+- Ref: [modules/05-agent-metrics-evaluations-and-benchmarking.md](../modules/05-agent-metrics-evaluations-and-benchmarking.md), https://arxiv.org/abs/2406.12045
 
 </details>
 
@@ -866,17 +866,17 @@ Why does reporting `pass@5` overstate production reliability for a customer-faci
 Why must **autonomous execution Time to Resolve (TTR)** be tracked separately from **HITL approval wait time**?
 
 - A) Because HITL wait times are always zero in production.
-- B) Merging `5`-second inference latency with `45`-minute human review queues masks model/tool latency regressions behind staffing variations.
+- B) Because Cost per Task multiplies TTR by `10^6`.
 - C) Because OTel GenAI spans prohibit timestamps longer than `60` seconds.
-- D) Because Cost per Task multiplies TTR by `10^6`.
+- D) Merging `5`-second inference latency with `45`-minute human review queues masks model/tool latency regressions behind staffing variations.
 
 <details><summary>Answer</summary>
 
-**B.** Separating autonomous compute duration from human queue wait time lets engineers diagnose inference/tool slowdowns independently of reviewer staffing capacity.
+**D.** Separating autonomous compute duration from human queue wait time lets engineers diagnose inference/tool slowdowns independently of reviewer staffing capacity.
 
 - Why not A: Human queues frequently take minutes to hours.
+- Why not B: Cost per Task is driven by token and tool counts, not wall-clock TTR.
 - Why not C: OpenTelemetry tracks multi-hour workflows via span links and durable trace IDs.
-- Why not D: Cost per Task is driven by token and tool counts, not wall-clock TTR.
 - Ref: [modules/05-agent-metrics-evaluations-and-benchmarking.md](../modules/05-agent-metrics-evaluations-and-benchmarking.md), https://github.com/open-telemetry/semantic-conventions-genai
 
 </details>
@@ -889,16 +889,16 @@ Why must **autonomous execution Time to Resolve (TTR)** be tracked separately fr
 
 Why does **disaggregated prefill/decode serving** reduce streaming `TPOT` tail latency on mixed workloads?
 
-- A) It runs prefill on CPU threads and decode on disk swap.
-- B) Prefill is compute-bound (FLOPs) while decode is memory-bandwidth-bound (HBM); isolating them onto separate worker pools connected via RDMA KV transfer stops long `32k`-token prefills from stalling active streaming decode batches.
+- A) Prefill is compute-bound (FLOPs) while decode is memory-bandwidth-bound (HBM); isolating them onto separate worker pools connected via RDMA KV transfer stops long `32k`-token prefills from stalling active streaming decode batches.
+- B) It runs prefill on CPU threads and decode on disk swap.
 - C) It disables KV caching so both phases compute attention from scratch every step.
 - D) It forces all users onto `max_tokens = 64`.
 
 <details><summary>Answer</summary>
 
-**B.** Disaggregating prefill and decode resolves hardware resource contention and head-of-line blocking between bursty prompt ingestion and steady token streaming.
+**A.** Disaggregating prefill and decode resolves hardware resource contention and head-of-line blocking between bursty prompt ingestion and steady token streaming.
 
-- Why not A: Both phases require GPU acceleration; CPU/swap execution would degrade latency by orders of magnitude.
+- Why not B: Both phases require GPU acceleration; CPU/swap execution would degrade latency by orders of magnitude.
 - Why not C: Disaggregation specifically transfers precomputed KV pages over RDMA/NVLink so decode avoids recomputing prefill.
 - Why not D: Disaggregated serving supports long-generation outputs cleanly without truncating `max_tokens`.
 - Ref: [modules/06-llmops-serving-observability-and-cicd.md](../modules/06-llmops-serving-observability-and-cicd.md), [../../system-design/modules/14-canonical-designs-transactional-and-staff.md](../../system-design/modules/14-canonical-designs-transactional-and-staff.md)
@@ -910,16 +910,16 @@ Why does **disaggregated prefill/decode serving** reduce streaming `TPOT` tail l
 What specific architectural advantage does **SGLang's RadixAttention** add on top of paged KV memory?
 
 - A) It trains LoRA adapters automatically on live user requests.
-- B) It organizes cached KV pages in a radix tree so multi-turn chats, shared system prompts, and branching agent trees automatically reuse matching KV prefixes across requests.
-- C) It replaces transformers with BM25 lexical matching.
+- B) It replaces transformers with BM25 lexical matching.
+- C) It organizes cached KV pages in a radix tree so multi-turn chats, shared system prompts, and branching agent trees automatically reuse matching KV prefixes across requests.
 - D) It bypasses JSON Schema validation completely.
 
 <details><summary>Answer</summary>
 
-**B.** RadixAttention treats the KV cache as an LRU radix tree keyed by token sequences, maximizing prefix reuse across multi-turn agent loops and shared RAG contexts.
+**C.** RadixAttention treats the KV cache as an LRU radix tree keyed by token sequences, maximizing prefix reuse across multi-turn agent loops and shared RAG contexts.
 
 - Why not A: RadixAttention is an inference caching structure, not online weight training.
-- Why not C: It accelerates transformer attention inside SGLang.
+- Why not B: It accelerates transformer attention inside SGLang.
 - Why not D: SGLang pairs RadixAttention with compressed FSM constrained decoding.
 - Ref: [modules/06-llmops-serving-observability-and-cicd.md](../modules/06-llmops-serving-observability-and-cicd.md), https://arxiv.org/abs/2312.07104
 
@@ -927,20 +927,20 @@ What specific architectural advantage does **SGLang's RadixAttention** add on to
 
 ### Q-AIE-046 · LLMOps: Serving, Observability & CI/CD · difficulty 2 · single
 
-In OpenTelemetry GenAI semantic conventions, what is the default setting of `OTEL_INSTRUMENTATION_GENAI_CAPTURE_CONTENT` and why?
+In OpenTelemetry GenAI semantic conventions, what is the default setting of `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT` and why?
 
 - A) `SPAN_AND_EVENT`, so every prompt and SSN is searchable in Jaeger/Tempo.
-- B) `NO_CONTENT`, emitting structural spans, token counts, model IDs, and latencies without leaking raw customer PII or proprietary prompts into shared telemetry stores.
+- B) `LOCAL_FILE`, storing prompts on ephemeral container rootfs.
 - C) `DEBUG_ALL`, writing unencrypted model weights to stdout.
-- D) `LOCAL_FILE`, storing prompts on ephemeral container rootfs.
+- D) `NO_CONTENT`, emitting structural spans, token counts, model IDs, and latencies without leaking raw customer PII or proprietary prompts into shared telemetry stores.
 
 <details><summary>Answer</summary>
 
-**B.** `NO_CONTENT` keeps PII and secrets out of general trace backends by default (`OWASP LLM02`), requiring explicit opt-in or encrypted `gen_ai.*_ref` blob URIs when payloads are needed.
+**D.** `NO_CONTENT` keeps PII and secrets out of general trace backends by default (`OWASP LLM02`), requiring explicit opt-in or encrypted `gen_ai.*_ref` blob URIs when payloads are needed.
 
 - Why not A: Capturing raw prompts by default violates privacy and secret-hygiene controls.
+- Why not B: Container rootfs storage is non-standard and fails ephemeral scaling.
 - Why not C: No such mode exists, and weights are never logged in telemetry.
-- Why not D: Container rootfs storage is non-standard and fails ephemeral scaling.
 - Ref: [modules/06-llmops-serving-observability-and-cicd.md](../modules/06-llmops-serving-observability-and-cicd.md), https://github.com/open-telemetry/semantic-conventions-genai/tree/main/docs/gen-ai
 
 </details>
@@ -969,16 +969,16 @@ Your team observes silent accuracy shifts on Mondays even though no code deploye
 
 How does an OTel GenAI trace maintain end-to-end causality across an agent invoking an external **MCP 2026-07-28** tool server?
 
-- A) By embedding the user's OAuth password in the tool name.
-- B) By propagating W3C `traceparent`, `tracestate`, and `baggage` headers inside the MCP JSON-RPC `_meta` object so the server's `gen_ai.execute_tool` span parents cleanly under `gen_ai.invoke_agent`.
+- A) By propagating W3C `traceparent`, `tracestate`, and `baggage` headers inside the MCP JSON-RPC `_meta` object so the server's `gen_ai.execute_tool` span parents cleanly under `gen_ai.invoke_agent`.
+- B) By embedding the user's OAuth password in the tool name.
 - C) By disabling distributed tracing whenever JSON-RPC is used.
 - D) By sorting spans alphabetically by `tool_name` in Grafana Tempo.
 
 <details><summary>Answer</summary>
 
-**B.** MCP 2026-07-28 propagates W3C Trace Context fields inside `_meta`, linking host `invoke_agent` / `chat` spans seamlessly to remote tool execution spans.
+**A.** MCP 2026-07-28 propagates W3C Trace Context fields inside `_meta`, linking host `invoke_agent` / `chat` spans seamlessly to remote tool execution spans.
 
-- Why not A: Credentials must never enter tool names or telemetry attributes.
+- Why not B: Credentials must never enter tool names or telemetry attributes.
 - Why not C: Disabling tracing destroys visibility into tool timeouts and errors.
 - Why not D: Alphabetical sorting cannot reconstruct parent-child trace causality.
 - Ref: [modules/06-llmops-serving-observability-and-cicd.md](../modules/06-llmops-serving-observability-and-cicd.md), https://github.com/open-telemetry/semantic-conventions-genai/tree/main/docs/gen-ai
@@ -990,7 +990,7 @@ How does an OTel GenAI trace maintain end-to-end causality across an agent invok
 Which CI/CD rollout sequence safely promotes a prompt and retriever change without exposing live users to unvalidated regressions?
 
 - A) Edit prompt in prod DB → Hope metrics stay green → Run unit tests next week.
-- B) Deterministic contract tests → Offline golden eval gate (Ragas + agent trajectory + red-team corpus) → 0%-impact shadow traffic mirroring → Gradual canary (`1% → 10% → 100%`) with automated rollback on guardrail/cost/TPOT alerts.
+- B) Deterministic contract tests → Offline golden eval gate (Ragas + agent trajectory + red-team corpus) → 0%-impact shadow traffic mirroring → Gradual canary (`1% → 10% → 50% → 100%`) with automated rollback on guardrail/cost/TPOT alerts.
 - C) Shadow traffic → Delete golden dataset → Direct `100%` cutover.
 - D) Manual spot-check of 2 queries → `100%` deploy → Disable canary rollbacks.
 
@@ -1010,16 +1010,16 @@ Which CI/CD rollout sequence safely promotes a prompt and retriever change witho
 Which OpenTelemetry GenAI metric isolates GPU **prefill/queue congestion** from **decode memory-bandwidth saturation** during streaming inference?
 
 - A) HTTP `200 OK` count alone.
-- B) Comparing `gen_ai.server.time_to_first_token` (`TTFT`) against `gen_ai.server.time_per_output_tokens` (`TPOT`).
-- C) Measuring only `gen_ai.usage.input_tokens`.
+- B) Measuring only `gen_ai.usage.input_tokens`.
+- C) Comparing `gen_ai.server.time_to_first_token` (`TTFT`) against `gen_ai.server.time_per_output_token` (`TPOT`).
 - D) Checking container disk free bytes.
 
 <details><summary>Answer</summary>
 
-**B.** `TTFT` captures queue wait and compute-bound prefill latency, whereas `TPOT` captures memory-bandwidth-bound autoregressive token generation cadence.
+**C.** `TTFT` captures queue wait and compute-bound prefill latency, whereas `TPOT` captures memory-bandwidth-bound autoregressive token generation cadence.
 
 - Why not A: Streaming `200 OK` headers start before decode stalls happen.
-- Why not C: Input token count explains workload size, not whether prefill or decode saturated.
+- Why not B: Input token count explains workload size, not whether prefill or decode saturated.
 - Why not D: GPU inference bottlenecks live in compute/HBM/KV-cache VRAM, not root disk capacity.
 - Ref: [modules/06-llmops-serving-observability-and-cicd.md](../modules/06-llmops-serving-observability-and-cicd.md), https://github.com/open-telemetry/semantic-conventions-genai
 
@@ -1053,17 +1053,17 @@ Which **two** practices keep a production golden evaluation dataset fresh and re
 Why does loading an untrusted `.pkl` or legacy `.pt` PyTorch model file pose an immediate Remote Code Execution (`RCE`) risk even before any inference runs?
 
 - A) Pickle compresses tensors using gzip headers that overflow CUDA buffers.
-- B) Python's `pickle` format is a stack virtual machine whose `GLOBAL`/`STACK_GLOBAL` and `REDUCE` opcodes invoke arbitrary Python callables during deserialization unless `weights_only=True` or `safetensors` is used.
+- B) Model weights contain HTTP cookies that bypass CORS.
 - C) PyTorch automatically compiles `.pkl` files into browser WebAssembly.
-- D) Model weights contain HTTP cookies that bypass CORS.
+- D) Python's `pickle` format is a stack virtual machine whose `GLOBAL`/`STACK_GLOBAL` and `REDUCE` opcodes invoke arbitrary Python callables during deserialization unless `weights_only=True` or `safetensors` is used.
 
 <details><summary>Answer</summary>
 
-**B.** Deserializing a malicious pickle executes embedded `REDUCE` callables (e.g., `posix.system`) before `torch.load` returns; using `safetensors`, `weights_only=True`, and `ModelScan 0.8.8` eliminates this vector.
+**D.** Deserializing a malicious pickle executes embedded `REDUCE` callables (e.g., `posix.system`) before `torch.load` returns; using `safetensors`, `weights_only=True`, and `ModelScan 0.8.8` eliminates this vector.
 
 - Why not A: The threat is pickle VM code execution, not gzip buffer overflows.
+- Why not B: Tensor checkpoints do not execute browser CORS cookies.
 - Why not C: PyTorch does not compile pickle streams into WebAssembly.
-- Why not D: Tensor checkpoints do not execute browser CORS cookies.
 - Ref: [modules/07-ai-security-stack-and-responsible-ai.md](../modules/07-ai-security-stack-and-responsible-ai.md), https://github.com/protectai/modelscan
 
 </details>
@@ -1072,16 +1072,16 @@ Why does loading an untrusted `.pkl` or legacy `.pt` PyTorch model file pose an 
 
 How does **ModelScan 0.8.8** inspect suspicious Pickle, H5/HDF5, Keras, and SavedModel files safely without triggering embedded payloads?
 
-- A) It loads the model inside a Python `eval()` block with `try/catch`.
-- B) It performs static byte-level opcode and signature scanning without ever unpickling or executing the artifact, returning exit code `1` on findings.
+- A) It performs static byte-level opcode and signature scanning without ever unpickling or executing the artifact, returning exit code `1` on findings.
+- B) It loads the model inside a Python `eval()` block with `try/catch`.
 - C) It forwards the binary to an LLM prompt and asks if it looks safe.
 - D) It converts `.pkl` files by running `pickle.loads()` on a GPU worker.
 
 <details><summary>Answer</summary>
 
-**B.** Static byte-level inspection avoids invoking the pickle VM altogether (`exit 0` clean, `exit 1` findings, `exit 2` scan error, `exit 3` unsupported format, `exit 4` usage).
+**A.** Static byte-level inspection avoids invoking the pickle VM altogether (`exit 0` clean, `exit 1` findings, `exit 2` scan error, `exit 3` unsupported format, `exit 4` usage).
 
-- Why not A: Running `eval()` or `pickle.loads()` triggers the very RCE exploit being scanned for.
+- Why not B: Running `eval()` or `pickle.loads()` triggers the very RCE exploit being scanned for.
 - Why not C: LLMs cannot reliably parse arbitrary binary pickle opcodes.
 - Why not D: `pickle.loads()` executes code on the host CPU regardless of GPU presence.
 - Ref: [modules/07-ai-security-stack-and-responsible-ai.md](../modules/07-ai-security-stack-and-responsible-ai.md), https://pypi.org/project/modelscan/
@@ -1113,16 +1113,16 @@ An enterprise support agent reads a customer's uploaded PDF containing hidden wh
 Which new category did the **OWASP Top 10 for LLM Applications 2026** edition introduce at `LLM08`, alongside `OWASP Agentic Top 10 2026 (ASI01–ASI10)`?
 
 - A) `LLM08: SQL Injection in BPE Tokenizers`.
-- B) `LLM08: Hidden Context Exposure` (while shifting Vector & Embedding Weaknesses to `LLM09` and Improper Output Handling to `LLM10`).
-- C) `LLM08: Unencrypted GPU Fan Telemetry`.
+- B) `LLM08: Unencrypted GPU Fan Telemetry`.
+- C) `LLM08: Hidden Context Exposure` (while shifting Vector & Embedding Weaknesses to `LLM09` and Improper Output Handling to `LLM10`).
 - D) `LLM08: Missing CSS Grid Alignment`.
 
 <details><summary>Answer</summary>
 
-**B.** OWASP LLM 2026 elevates Excessive Agency (`LLM03`) and adds `LLM08: Hidden Context Exposure` to capture leakage of invisible instructions, context metadata, and hidden reasoning artifacts.
+**C.** OWASP LLM 2026 elevates Excessive Agency (`LLM03`) and adds `LLM08: Hidden Context Exposure` to capture leakage of invisible instructions, context metadata, and hidden reasoning artifacts.
 
 - Why not A: SQL injection belongs to downstream output handling (`LLM05`/`LLM10`), not BPE tokenizers.
-- Why not C: Hardware fan telemetry is not an OWASP LLM risk category.
+- Why not B: Hardware fan telemetry is not an OWASP LLM risk category.
 - Why not D: CSS layout has no connection to OWASP LLM Top 10.
 - Ref: [modules/07-ai-security-stack-and-responsible-ai.md](../modules/07-ai-security-stack-and-responsible-ai.md), https://genai.owasp.org/llm2026/
 
@@ -1150,7 +1150,7 @@ In **MITRE ATLAS v2026.11**, which technique and mitigation pair addresses **mal
 
 ### Q-AIE-057 · AI Security Stack & Responsible AI · difficulty 2 · single
 
-Which specification standardizes machine-readable **ML-BOM** provenance (`machine-learning-model` + `modelCard` + `dataset` components) using `application/vnd.cyclonedx+json`?
+Which specification standardizes machine-readable **ML-BOM** provenance (`machine-learning-model` + `modelCard` + `data` components with `type: "dataset"`) using `application/vnd.cyclonedx+json`?
 
 - A) **CycloneDX 1.7** (`ECMA-424`, 2025-10-21).
 - B) HTTP/1.1 Chunked Encoding (`RFC 9112`).
@@ -1159,7 +1159,7 @@ Which specification standardizes machine-readable **ML-BOM** provenance (`machin
 
 <details><summary>Answer</summary>
 
-**A.** CycloneDX 1.7 (`ECMA-424`) provides standardized `modelCard` (`modelParameters`, `quantitativeAnalysis`, `considerations`), `dataset` governance, `formulation`, and vulnerability tracking for ML-BOMs (`AML.M0023`).
+**A.** CycloneDX 1.7 (`ECMA-424`) provides standardized `modelCard` (`modelParameters`, `quantitativeAnalysis`, `considerations.technicalLimitations`), `type: "data"` components (`data[].type: "dataset"`) with `governance`, `formulation`, and vulnerability tracking for ML-BOMs (`AML.M0023`).
 
 - Why not B: RFC 9112 specifies HTTP/1.1 wire framing, not ML supply-chain BOMs.
 - Why not C: YAML is a generic serialization syntax, not an ML-BOM schema.
@@ -1192,17 +1192,17 @@ What are the **four** core functions of **NIST AI RMF 1.0 (`AI 100-1`)**, and wh
 In Responsible AI fairness evaluation, why can an imperfect binary classifier **not** satisfy both **Equalized Odds** and **Calibration Parity** simultaneously when two protected demographic groups have unequal positive base rates?
 
 - A) Because Python `float64` rounds probabilities to 2 decimal places.
-- B) By the Kleinberg–Mullainathan–Raghavan impossibility theorem, unequal base rates mathematically preclude satisfying both equal score calibration and equal TPR/FPR simultaneously unless predictions are perfect.
+- B) Because `temperature = 0` disables Demographic Parity.
 - C) Because `safetensors` removes fairness metadata during loading.
-- D) Because `temperature = 0` disables Demographic Parity.
+- D) By the Kleinberg–Mullainathan–Raghavan impossibility theorem, unequal base rates mathematically preclude satisfying both equal score calibration and equal TPR/FPR simultaneously unless predictions are perfect.
 
 <details><summary>Answer</summary>
 
-**B.** Fairness criteria encode incompatible mathematical trade-offs whenever base rates differ; engineering teams must explicitly select and document the criterion matching the domain's real-world harm profile.
+**D.** Fairness criteria encode incompatible mathematical trade-offs whenever base rates differ; engineering teams must explicitly select and document the criterion matching the domain's real-world harm profile.
 
 - Why not A: This is a mathematical theorem over probability distributions, not a floating-point precision artifact.
+- Why not B: Sampling temperature does not resolve base-rate fairness impossibility.
 - Why not C: `safetensors` is a tensor file format unrelated to subgroup metrics.
-- Why not D: Sampling temperature does not resolve base-rate fairness impossibility.
 - Ref: [modules/07-ai-security-stack-and-responsible-ai.md](../modules/07-ai-security-stack-and-responsible-ai.md), https://arxiv.org/abs/1609.05807
 
 </details>

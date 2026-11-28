@@ -181,13 +181,13 @@ describe('RAG Hybrid Search, Filtering Selectivity & Ragas Metrics', () => {
     {
       id: 'doc-semantic',
       tenantId: 'acme',
-      text: 'Container memory exhaustion terminates processes abruptly once container RAM caps saturate.',
+      text: 'Container exhaustion terminates processes abruptly once RAM caps saturate.',
       embedding: [0.96, 0.28, 0.0],
     },
     {
       id: 'doc-noise-1',
       tenantId: 'acme',
-      text: 'Container restart policies control CrashLoopBackOff backoff intervals.',
+      text: 'Pod restart policies control CrashLoopBackOff backoff intervals.',
       embedding: [0.91, 0.41, 0.0],
     },
     {
@@ -214,26 +214,42 @@ describe('RAG Hybrid Search, Filtering Selectivity & Ragas Metrics', () => {
     const topTwo = new Set(fused.slice(0, 2).map((h) => h.id));
     assert.ok(topTwo.has('doc-exact-err'));
     assert.ok(topTwo.has('doc-semantic'));
+    assert.ok((fused[1]?.score ?? 0) - (fused[2]?.score ?? 0) > 0.01);
   });
 
   it('proves RRF scores are strictly bounded and monotone with rank', () => {
     fc.assert(
       fc.property(
+        fc.integer({ min: 1, max: 50 }),
+        fc.integer({ min: 1, max: 50 }),
         fc.integer({ min: 1, max: 100 }),
-        fc.integer({ min: 1, max: 100 }),
-        fc.integer({ min: 1, max: 100 }),
-        (r1, r2, k) => {
-          const scoreBetter = 1 / (k + Math.min(r1, r2));
-          const scoreWorse = 1 / (k + Math.max(r1, r2));
-          assert.ok(scoreBetter >= scoreWorse);
-          assert.ok(scoreBetter <= 1 / (k + 1));
+        (lenBeforeBetter, gap, k) => {
+          const prefix: RankedHit[] = Array.from({ length: lenBeforeBetter - 1 }, (_, i) => ({
+            id: `p-${i}`,
+            score: 1,
+          }));
+          const middle: RankedHit[] = Array.from({ length: gap }, (_, i) => ({
+            id: `m-${i}`,
+            score: 0.5,
+          }));
+          const list: RankedHit[] = [
+            ...prefix,
+            { id: 'better', score: 0.8 },
+            ...middle,
+            { id: 'worse', score: 0.2 },
+          ];
+          const fused = reciprocalRankFusion([list], k);
+          const scoreBetter = fused.find((h) => h.id === 'better')?.score ?? 0;
+          const scoreWorse = fused.find((h) => h.id === 'worse')?.score ?? 0;
+          assert.ok(scoreBetter > scoreWorse);
+          assert.ok(scoreBetter <= 1 / (k + 1) + 1e-12);
         },
       ),
     );
   });
 
   it('demonstrates the post-filter selectivity trap vs pre-filter recall preservation', () => {
-    // 100 docs: 99 belong to tenant-big with slightly higher cosine similarity; 5 belong to tenant-small
+    // 104 docs: 99 belong to tenant-big with slightly higher cosine similarity; 5 belong to tenant-small
     const mixedCorpus: IndexedDoc[] = [];
     for (let i = 0; i < 99; i++) {
       mixedCorpus.push({

@@ -57,7 +57,7 @@ graph TD
 
 ## 2. Effective Latency Mathematics and Cache Hit Ratios
 
-The performance benefit of caching is modeled via the **Effective Memory Access Time ($T_{\text{eff}}$)**:
+The performance benefit of caching is modeled via the **Effective Memory Access Time** ($T_{\text{eff}}$):
 
 $$T_{\text{eff}} = H \cdot T_{\text{cache}} + (1 - H) \cdot T_{\text{db}}$$
 
@@ -102,10 +102,10 @@ sequenceDiagram
     Note over DB, Cache: Safe! Cache is cleared, next read fetches 200.
 
     Note over DB, Cache: The Catastrophic Race: Cache Update Instead of Delete
-    Writer->>DB: 4. UPDATE balance = 300
-    Writer->>Cache: 5. SET balance = 300 (Network delay!)
-    Reader->>DB: 6. Reads 300 from DB
-    Reader->>Cache: 7. SET balance = 300 arrives AFTER Writer's old write!
+    Reader->>DB: 4. SELECT balance (Returns old 200)
+    Writer->>DB: 5. UPDATE balance = 300
+    Writer->>Cache: 6. SET balance = 300
+    Reader->>Cache: 7. SET balance = 200 arrives AFTER Writer's write!
     Note over Cache: Cache holds permanently corrupt stale data!
 ```
 
@@ -151,7 +151,7 @@ sequenceDiagram
 3. **Explicit TTL Expiry and Jitter**: Every cache entry needs a Time-To-Live (`TTL`) as the hard upper bound on staleness when invalidations are delayed or lost. Assigning identical fixed TTLs during bulk warm-ups causes a synchronized **Cache Avalanche** when thousands of keys expire in the same second; adding random **TTL Jitter** ($\text{TTL} = \text{base} + \text{rand}(0, \text{jitter})$) spreads expirations smoothly over time. Note that TTL expiry alone does not stop a **Cache Breakdown** on a single hot key—pair TTLs with Request Coalescing or XFetch.
 4. **Probabilistic Early Expiration: The XFetch Algorithm**:
    - Formulated by Vattani, Chierichetti, and Lowenstein in 2015 (_"Optimal Probabilistic Cache Stampede Prevention"_, VLDB).
-   - Rather than waiting for a key to strictly expire at time $T$, workers evaluating read operations perform a probabilistic check to determine if they should **asynchronously recompute the value before it expires**.
+   - Rather than waiting for a key to strictly expire at time $T$, workers evaluating read operations perform a probabilistic check to determine whether to **recompute and refresh the value early before it expires**.
 
 ### The XFetch Mathematical Formulation
 
@@ -176,7 +176,7 @@ graph LR
     end
 ```
 
-Because $\ln(\text{rand}())$ is negative, as $\Delta \to 0$ (as the key approaches its expiration deadline), the probability of the condition evaluating to true increases exponentially. Exactly **one** random worker will trigger the recomputation in the background milliseconds before the key expires, repopulating the cache with a fresh TTL with **zero mutex locking** and zero stampede risk!
+Because $\ln(\text{rand}())$ is negative, as $\text{TTL}_{\text{remaining}} \to 0$ (as the key approaches its expiration deadline), the probability of the condition evaluating to true increases exponentially. **Typically one (or a small number of) readers** will trigger recomputation just before the key expires, repopulating the cache with a fresh TTL with **zero mutex locking** and negligible stampede risk!
 
 ---
 

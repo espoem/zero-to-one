@@ -80,18 +80,19 @@ def test_pydantic_manifest_validation() -> None:
 
 def test_leakage_free_pipeline_vs_pre_split_leakage_counterexample() -> None:
     rng = np.random.default_rng(42)
-    # Pure noise features with an extreme test-half outlier scale shift
-    n = 400
-    x = rng.normal(0.0, 1.0, size=(n, 5))
-    y = rng.integers(0, 2, size=n)
+    # Normal train half (first 200 rows) vs. an extreme +1000 outlier shift in test half (last 200 rows).
+    # Fitting StandardScaler on all 400 rows leaks the future test-half shift into training feature scale!
+    x_train = rng.normal(0.0, 1.0, size=(200, 5))
+    x_test = rng.normal(1000.0, 1.0, size=(200, 5))
+    x_all = np.vstack([x_train, x_test])
+    y_train = (x_train[:, 0] > 0).astype(int)
+    y_test = (x_test[:, 0] > 1000.0).astype(int)
 
-    # Negative check: pre-fitting scaler across train+test leaks global mean/variance
-    leaky_scaler = StandardScaler()
-    x_leaky = leaky_scaler.fit_transform(x)
-    cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
-    leaky_scores = cross_val_score(LogisticRegression(max_iter=500), x_leaky, y, cv=cv)
+    # Negative check: pre-fitting scaler across train+test leaks test distribution (~500 mean instead of ~0)
+    leaky_scaler = StandardScaler().fit(x_all)
+    assert abs(float(leaky_scaler.mean_[0])) > 400.0
 
-    # Leakage-free: scaler fit strictly inside each fold via Pipeline + ColumnTransformer
+    # Leakage-free: scaler fit strictly on x_train inside Pipeline
     prep = ColumnTransformer(
         transformers=[
             ("num", StandardScaler(), [0, 1, 2, 3, 4]),
@@ -99,9 +100,16 @@ def test_leakage_free_pipeline_vs_pre_split_leakage_counterexample() -> None:
         remainder="drop",
     )
     safe_pipe = Pipeline([("prep", prep), ("clf", LogisticRegression(max_iter=500))])
-    safe_scores = cross_val_score(safe_pipe, x, y, cv=cv)
+    safe_pipe.fit(x_train, y_train)
+    train_scaler = safe_pipe.named_steps["prep"].named_transformers_["num"]
+    assert abs(float(train_scaler.mean_[0])) < 0.25
 
-    assert len(leaky_scores) == 5 and len(safe_scores) == 5
+    cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+    cv_scores = cross_val_score(safe_pipe, x_train, y_train, cv=cv)
+    assert len(cv_scores) == 5 and float(cv_scores.mean()) > 0.90
+    assert abs(float(train_scaler.mean_[0]) - float(leaky_scaler.mean_[0])) > 400.0
+    assert len(y_test) == 200
+
     # Verify OneHotEncoder handle_unknown="ignore" survives unseen production categories
     train_cat = np.array([["retail"], ["travel"], ["dining"]], dtype=object)
     unseen_cat = np.array([["crypto"]], dtype=object)

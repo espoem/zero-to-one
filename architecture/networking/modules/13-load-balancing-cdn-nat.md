@@ -230,7 +230,7 @@ Each backend $B_i$ carries a static capacity weight $w_i > 0$, targeting share $
 
 $$c_i \leftarrow c_i + w_i \quad (\forall i), \qquad s = \arg\max_i c_i, \qquad c_s \leftarrow c_s - W$$
 
-Over every cycle of $W$ requests, the sum invariant $\sum_i c_i = 0$ holds and every backend receives exactly $w_i$ requests interleaved smoothly (for weights $[5, 1, 1]$, the exact 7-request sequence is `[A, A, B, A, C, A, A]`, never 5 consecutive requests to `A`). Selection takes $O(N)$ time (small upstream pools) or $O(\log N)$ with a max-heap.
+Over every cycle of $W$ requests, the sum invariant $\sum_i c_i = 0$ holds and every backend receives exactly $w_i$ requests interleaved smoothly (for weights $[5, 1, 1]$, the exact 7-request sequence is `[A, A, B, A, C, A, A]`, never 5 consecutive requests to `A`). Online selection scans $O(N)$ per pick (since every $c_i$ changes on each request), or serves in $O(1)$ from a precomputed $W$-length cyclic schedule.
 
 ### 3. Least Connections (LC)
 
@@ -270,7 +270,7 @@ To preserve cache locality and session affinity across node churn, **Consistent 
 | Algorithm | Selection Complexity | State Required | Affinity | Pros | Cons / Pitfalls | Best Use Case |
 | :-- | :-: | :-: | :-: | :-- | :-- | :-- |
 | **Round Robin** | $O(1)$ | Cursor ($O(1)$) | None | Zero tuning; uniform count on homogeneous nodes | Blind to latency spikes and variable request cost | Stateless, uniform-cost microservices |
-| **Smooth WRR** | $O(N)$ \| $O(\log N)$ | `cw` vector ($O(N)$) | None | Respects capacity weights without block bursts | Still blind to in-flight stalls and noisy neighbors | Mixed instance sizes with similar request work |
+| **Smooth WRR** | $O(N)$ \| $O(1)$ cycle | `cw` vector ($O(N)$) | None | Respects capacity weights without block bursts | Still blind to in-flight stalls and noisy neighbors | Mixed instance sizes with similar request work |
 | **Least Connections** | $O(N)$ | Active counts ($O(N)$) | None | Adapts to variable request duration automatically | Cold-start & fast-fail `5xx` thundering herd | Long-lived WebSockets, gRPC streams, DB pools |
 | **LRT (EWMA + P2C)** | $O(1)$ | Local EWMA + conns | None | $\Theta(\ln \ln n)$ max load; avoids stale-herd stampedes | Slightly higher tail on $N \le 3$ pools vs full scan | Large L7 microservice meshes (Envoy, Linkerd) |
 | **IP Hash** | $O(1)$ | Pool list ($O(N)$) | IP-based | Cookie-free sticky routing at L4 or L7 | CGNAT (RFC 6598) hotspots; $\sim N/(N+1)$ churn | Legacy stateful apps without shared session store |

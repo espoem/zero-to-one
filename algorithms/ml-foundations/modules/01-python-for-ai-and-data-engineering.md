@@ -40,7 +40,7 @@ NumPy's universal functions (`ufunc`) execute tight C loops compiled with AVX2/A
 
 | Pattern (1M `float64` elements) | Execution Mechanism | Memory / Dispatch Overhead |
 | --- | --- | --- |
-| Python `for` loop + `math.exp` | Bytecode dispatch + `PyFloatObject` boxing (`28 B`/elem) per step | `~50–100x` slower; pointer chasing |
+| Python `for` loop + `math.exp` | Bytecode dispatch + `PyFloatObject` boxing (`24 B` + `8 B` ptr per elem) | `~50–100x` slower; pointer chasing |
 | `np.exp(x)` on contiguous C-array | Single Python call into vectorized SIMD C loop | L1/DRAM bandwidth-bound |
 | `np.sum(a[:, 0])` on non-contiguous `C` slice | Strided gather across cache lines (`stride = 8*C`) | Degrades vectorization if `C` is large |
 

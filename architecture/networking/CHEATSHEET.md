@@ -390,7 +390,7 @@ ip netns exec blue ip link set veth-blue up                       # Bring interf
 | Algorithm | Selection Rule / Formula | Complexity / State | Affinity | Primary Failure Mode | Best Use Case |
 | :-- | :-- | :-: | :-: | :-- | :-- |
 | **Round Robin (RR)** | `idx = k % N` | $O(1)$ time / $O(1)$ | None | Keeps feeding degraded slow nodes equally | Homogeneous stateless pools |
-| **Smooth WRR (Nginx)** | $c_i \mathrel{+}= w_i$; pick $\arg\max c_i$; $c_s \mathrel{-}= \sum w$ | $O(N)$ \| $O(\log N)$ / $O(N)$ | None | Blind to active stalls and uneven request cost | Weighted pools avoiding block bursts |
+| **Smooth WRR (Nginx)** | $c_i \mathrel{+}= w_i$; pick $\arg\max c_i$; $c_s \mathrel{-}= \sum w$ | $O(N)$ \| $O(1)$ cycle / $O(N)$ | None | Blind to active stalls and uneven request cost | Weighted pools avoiding block bursts |
 | **Least Connections (LC)** | $\arg\min_i (a_i / w_i)$ | $O(N)$ time / $O(N)$ | None | Thundering herd on new or fast-failing `5xx` nodes | WebSockets, gRPC streams, DB pools |
 | **LRT (EWMA + P2C)** | $\hat{\tau}_i \leftarrow (1-\alpha)\hat{\tau}_i + \alpha\tau$; pick best of 2 random | $O(1)$ time ($\Theta(\ln\ln n)$ max load) | None | Higher tail on tiny pools ($N \le 3$) vs full scan | Large L7 service meshes (Envoy/Linkerd) |
 | **IP Hash** | `h(ip_prefix) % N` (`/24` IPv4, `/128` IPv6) | $O(1)$ time / $O(N)$ | Client IP | CGNAT (RFC 6598) hot-spotting; $\sim N/(N+1)$ churn | Legacy sticky sessions without cookies |

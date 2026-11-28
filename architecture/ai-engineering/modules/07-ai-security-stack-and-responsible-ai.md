@@ -41,13 +41,13 @@ Loading untrusted model weights is a remote code execution vector (`OWASP LLM03`
 
 - **Secrets Hygiene**: Never embed API keys, database URLs, or tenant tokens in system prompts, few-shot examples, or MCP `x-mcp-header` parameters; redact PII/secrets deterministically _before_ third-party LLM egress (`OWASP LLM02` / `LLM07`).
 - **CycloneDX 1.7 ML-BOM (ECMA-424, released 2025-10-21)**: Generates a verifiable **Machine Learning Bill of Materials** (`application/vnd.cyclonedx+json`, predicate `https://cyclonedx.org/bom`, `AML.M0023`):
-  - `component` with `type: "machine-learning-model"` carrying `modelCard` (`modelParameters` — architecture, datasets, inputs/outputs; `quantitativeAnalysis` — metrics with confidence intervals; `considerations` — limitations, fairness, ethical/security risks).
-  - `data` components (`type: "dataset"`, `contents`, `governance` — owners, custodians, provenance), `formulation` for training/build steps, plus `dependencies` and known `vulnerabilities`.
+  - `component` with `type: "machine-learning-model"` carrying `modelCard` (`modelParameters` — architecture, datasets, inputs/outputs; `quantitativeAnalysis` — metrics with confidence intervals; `considerations` — `technicalLimitations`, fairness, ethical/security risks).
+  - `component` with `type: "data"` carrying `data` entries (`type: "dataset"`, `contents`, `governance` — owners, custodians, provenance), `formulation` for training/build steps, plus `dependencies` and known `vulnerabilities`.
 
 ### Layer 6: Policy & Tenant Access Control
 
 - Bind `tenantId`, `principalId`, and `aclRoles` strictly from verified session/OAuth tokens ([`architecture/security-identity`](../../security-identity/README.md)), never from request JSON payloads.
-- Enforce **pre-filtered** tenant/ACL isolation in both RAG vector indexes (Module 02) and guarded semantic caches ([`system-design` M25](../../system-design/modules/25-reliable-ai-systems.md#42-exact-caching-provider-prefix-caching-and-the-semantic-cache-false-hit--poisoning-trap)) using OPA/Cedar policy engines (`OWASP LLM08` / `LLM09` Vector & Embedding Weaknesses).
+- Enforce **pre-filtered** tenant/ACL isolation in both RAG vector indexes (Module 02) and guarded semantic caches ([`system-design` M25](../../system-design/modules/25-reliable-ai-systems.md#42-exact-caching-provider-prefix-caching-and-the-semantic-cache-false-hit--poisoning-trap)) using OPA/Cedar policy engines (`OWASP LLM08:2025` / `LLM09:2026` Vector & Embedding Weaknesses).
 
 ### Layer 7: Security Monitoring & Anomaly Telemetry
 
@@ -57,7 +57,7 @@ Loading untrusted model weights is a remote code execution vector (`OWASP LLM03`
 
 | Framework (Verified 2026-11-28) | Structure & Scope | Key Entries for AI Engineers |
 | :-- | :-- | :-- |
-| **OWASP LLM Top 10:2025 + 2026 Edition** | `2025` (current stable baseline) + `2026` edition re-ranked & expanded | **2025**: `LLM01` Prompt Injection, `LLM02` Sensitive Info Disclosure, `LLM03` Supply Chain, `LLM04` Data/Model Poisoning, `LLM05` Improper Output Handling, `LLM06` Excessive Agency, `LLM07` System Prompt Leakage, `LLM08` Vector & Embedding Weaknesses, `LLM09` Misinformation, `LLM10` Unbounded Consumption. **2026 delta**: elevates Excessive Agency (`LLM03`) and adds **`LLM08` Hidden Context Exposure** (re-ranking Improper Output Handling to `LLM10`). |
+| **OWASP LLM Top 10:2025 + 2026 Edition** | `2025` baseline + `2026` re-ranking & expansion ([`genai.owasp.org/llm2026/`](https://genai.owasp.org/llm2026/)) | **2026 (`LLM01–LLM10`)**: `LLM01` Prompt Injection (incl. cross-modal), `LLM02` Sensitive Info Disclosure, `LLM03` Excessive Agency, `LLM04` Supply Chain, `LLM05` Data & Model Poisoning, `LLM06` Unbounded Consumption, `LLM07` Misinformation, `LLM08` **Hidden Context Exposure** (widened from 2025 `LLM07` System Prompt Leakage), `LLM09` Vector & Embedding Weaknesses (was `LLM08:2025`), `LLM10` Improper Output Handling (was `LLM05:2025`). |
 | **OWASP Agentic Top 10 (2026)** | `ASI01–ASI10` (PDF dated `2026-11`) | `ASI01` Agent Goal Hijack, `ASI02` Tool Misuse & Exploitation, `ASI03` Identity & Privilege Abuse, `ASI04` Agentic Supply Chain, `ASI05` Unexpected Code Execution (RCE), `ASI06` Memory & Context Poisoning, `ASI07` Insecure Inter-Agent Communication, `ASI08` Cascading Failures, `ASI09` Human-Agent Trust Exploitation, `ASI10` Rogue Agents. |
 | **NIST AI RMF 1.0 + GenAI Profile (`AI 600-1`)** | 4 core functions (**GOVERN, MAP, MEASURE, MANAGE**) × 7 trustworthiness characteristics | `AI 100-1` (`2023-01`, under revision per 2026 action plan) + `AI 600-1` (`2024-07`) defining **12 GenAI risk categories** (CBRN, confabulation, dangerous content, data privacy, environmental impacts, harmful bias, human-AI configuration, information integrity, info security, IP, obscene content, value chain). |
 | **MITRE ATLAS (`v2026.11`)** | `16` tactics, `137` techniques, `98` sub-techniques, `44` mitigations, `85` case studies | `AML.T0051.001` Indirect Prompt Injection, `AML.T0053` Agent Tool Invocation, `AML.T0080/.001` Context/Memory Poisoning, `AML.T0110` Tool Poisoning, `AML.T0085` Data from AI Services, `AML.T0034` Cost Harvesting; Mitigations `AML.M0028` Tool ACL, `AML.M0029` HITL, `AML.M0037` Authority Controls, `AML.M0038` Scope-Drift Detection. |
@@ -89,7 +89,7 @@ During a pre-launch security review of an autonomous recruiting screener, red-te
 
 | Component / Standard | Earlier Practice (Then, 2023–2024) | Current Practice (Now, 2026) | Migration Pitfall |
 | :-- | :-- | :-- | :-- |
-| **MCP Specification** | `2024-11-05` stateful sessions, `resources/subscribe`, server sampling & roots | **`2026-07-28`** stateless per-request `_meta`, unified `subscriptions/listen`, `input_required` MRTR (`sampling`/`roots`/`logging` deprecated) | Reusing JSON-RPC `id` on MRTR retries or missing `_meta.clientCapabilities` (`-32021`) |
+| **MCP Specification** | `2024-11-05` stateful sessions, `resources/subscribe`, server sampling & roots | **`2026-07-28`** stateless per-request `_meta`, unified `subscriptions/listen`, `input_required` MRTR (`sampling`/`roots`/`logging` deprecated) | Reusing JSON-RPC `id` on MRTR retries or missing `_meta.clientCapabilities` (`-32602`) |
 | **LangGraph & Evals** | Ad-hoc prompt chains + Ragas `v0.1` legacy metrics | **LangGraph `1.2.24` / `1.7.5`** Pregel BSP `interrupt()`/`Send` + **Ragas `0.4.4`** collections API (legacy removed in 1.0) | Relying on `temperature = 0` for determinism instead of deterministic harness ceilings and golden evals |
 | **RAG Embeddings & Retrieval** | Dense-only single-vector cosine (`float32`), fixed chunking | **MRL** truncated embeddings (`gemini-embedding-2`, `embed-v5.0-pro`), Contextual Retrieval, hybrid BM25 + RRF + cross-encoder/ColBERT reranking | Mixing vectors across incompatible embedding model versions without shadow re-indexing |
 | **AI Security & Governance** | Regex prompt filters, `.pkl`/`.bin` `torch.load`, OWASP LLM 2023 | **OWASP LLM Top 10:2025/2026 (`LLM08` Hidden Context)** + **Agentic `ASI01–ASI10`**, **MITRE ATLAS `v2026.11`**, `safetensors` + `ModelScan 0.8.8`, **CycloneDX 1.7 ML-BOM** | Treating LLM output as trusted or granting tool permissions from prompt text instead of session principals |
@@ -118,7 +118,7 @@ OWASP LLM 2026 adds `LLM08: Hidden Context Exposure` (highlighting leakage of in
 
 <details><summary>Answer</summary>
 
-By the Kleinberg–Mullainathan–Raghavan impossibility theorem, whenever two protected groups have unequal underlying positive base rates ($P(Y=1 \mid A=0) \ne P(Y=1 \mid A=1)$) and predictions are imperfect, achieving both equal score calibration and equal false-positive/false-negative rates across groups is mathematically impossible. Engineers must select the fairness criterion aligned with the domain's legal and ethical harm model.
+Under unequal positive base rates ($P(Y=1 \mid A=0) \ne P(Y=1 \mid A=1)$), **Demographic Parity** ($P(\hat{Y}=1 \mid A=0) = P(\hat{Y}=1 \mid A=1)$) cannot hold simultaneously with Calibration Parity or (for non-trivial predictors) with Equalized Odds. Moreover, by the Kleinberg–Mullainathan–Raghavan / Chouldechova impossibility theorem, calibration parity and Equalized Odds cannot both hold when base rates differ and predictions are imperfect. Engineers must select the fairness criterion aligned with the domain's legal and ethical harm model.
 
 </details>
 
@@ -126,7 +126,7 @@ By the Kleinberg–Mullainathan–Raghavan impossibility theorem, whenever two p
 
 <details><summary>Answer</summary>
 
-A CycloneDX 1.7 (`ECMA-424`) ML-BOM includes a `machine-learning-model` component with a `modelCard` (`modelParameters` for architecture and inputs/outputs, `quantitativeAnalysis` for metrics and confidence intervals, `considerations` for biases and limitations), linked `dataset` components with `governance`/provenance metadata, `formulation` build/training steps, plus `dependencies` and `vulnerabilities`.
+A CycloneDX 1.7 (`ECMA-424`) ML-BOM includes a `machine-learning-model` component with a `modelCard` (`modelParameters` for architecture and inputs/outputs, `quantitativeAnalysis` for metrics and confidence intervals, `considerations.technicalLimitations` for known operational bounds), linked `type: "data"` components (`data[].type: "dataset"` with `governance`/provenance metadata), `formulation` build/training steps, plus `dependencies` and `vulnerabilities`.
 
 </details>
 

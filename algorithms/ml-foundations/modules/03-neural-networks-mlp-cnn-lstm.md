@@ -8,7 +8,7 @@ Classical linear models rely on hand-crafted basis expansions $\phi(\mathbf{x})$
 
 ### 1.1 Universal Approximation Theorems
 
-- **Cybenko (1989) & Hornik (1991)**: A feedforward network with a single hidden layer containing finitely many units and any continuous, non-constant, bounded monotone activation (Cybenko) or merely non-polynomial activation (Hornik) can approximate any continuous function $f \in C(K)$ on a compact set $K \subset \mathbb{R}^d$ to arbitrary $\varepsilon > 0$ accuracy in the supremum norm.
+- **Cybenko (1989), Hornik (1991) & Leshno et al. (1993)**: A feedforward network with a single hidden layer containing finitely many units and any continuous, bounded, non-constant activation (Cybenko / Hornik) — or any locally bounded piecewise continuous non-polynomial activation (Leshno, Lin, Pinkus & Schocken, 1993) — can approximate any continuous function $f \in C(K)$ on a compact set $K \subset \mathbb{R}^d$ to arbitrary $\varepsilon > 0$ accuracy in the supremum norm.
 - **Why depth matters**: Universal approximation is an existence statement, not a parameter-efficiency guarantee. Representing compositions or parity-like functions with width alone can demand $\mathcal{O}(2^n)$ hidden units in depth-2 networks, whereas deep architectures compose hierarchical features in $\mathcal{O}(\mathrm{poly}(n))$ parameters.
 
 ### 1.2 Reverse-Mode Automatic Differentiation (VJP)

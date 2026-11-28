@@ -119,24 +119,50 @@ describe('CNN Receptive Field, RoPE Invariance, and AWQ Quantization', () => {
   });
 
   it('proves AWQ salient-channel scaling lowers INT4 output error vs naive RTN', () => {
-    // Channel 0 has large activation magnitude (salient), while weights are moderate across channels.
+    // Channel 0 has large mean activation magnitude across calibration samples, while weights stay moderate.
     const w = [0.12, 0.95, -0.88, 0.72, -0.64, 0.55, -0.41, 0.33];
-    const x = [42.0, 0.4, -0.3, 0.5, -0.2, 0.6, -0.4, 0.25];
-    const yTrue = matVec(w, x);
+    const xCalib = [
+      [42.0, 0.4, -0.3, 0.5, -0.2, 0.6, -0.4, 0.25],
+      [38.0, -0.3, 0.4, -0.4, 0.3, -0.5, 0.3, -0.2],
+      [40.0, 0.2, -0.2, 0.3, -0.3, 0.4, -0.2, 0.3],
+    ];
+    const yCalib = xCalib.map((x) => matVec(w, x));
 
-    // Naive RTN INT4 quantizes w[0] = 0.12 against scale = 0.95/7 = 0.1357 -> rounds to 1*0.1357
+    // Naive RTN INT4 quantizes w[0] = 0.12 against scale = 0.95/7 = 0.1357 -> severe error on channel 0
     const wRtn = quantizeSymmetricInt4(w);
-    const errRtn = Math.abs(yTrue - matVec(wRtn, x));
+    const mseRtn =
+      xCalib.reduce((acc, x, k) => acc + (yCalib[k]! - matVec(wRtn, x)) ** 2, 0) / xCalib.length;
 
-    // AWQ scales salient channel 0 up by s_0 = (42 / 0.6)^0.5 ~= 8.3666 so w_scaled[0] drives its own finer step,
-    // or with per-group scaling / salient boost while holding non-salient channels bounded.
-    // Specifically, amplify channel 0 by s0 = 7.9 (matching max(w)/w[0]) and divide x[0] by s0:
-    const s = [7.9, 1, 1, 1, 1, 1, 1, 1];
-    const wScaled = w.map((v, i) => v * (s[i] ?? 1));
-    const xScaled = x.map((v, i) => v / (s[i] ?? 1));
-    const wAwqQuant = quantizeSymmetricInt4(wScaled);
-    const errAwq = Math.abs(yTrue - matVec(wAwqQuant, xScaled));
+    // AWQ computes per-channel mean activation magnitude s_X = mean(|X_{:,j}|) and grid-searches alpha in [0, 1]
+    const meanAbsX = w.map(
+      (_, j) => xCalib.reduce((sum, row) => sum + Math.abs(row[j]!), 0) / xCalib.length,
+    );
+    let bestErr = Number.POSITIVE_INFINITY;
+    let bestAlpha = 0;
+    for (let step = 0; step <= 10; step++) {
+      const alpha = step / 10;
+      const s = meanAbsX.map((m) => m ** alpha);
+      const wScaled = w.map((v, i) => v * s[i]!);
+      const wAwqQuant = quantizeSymmetricInt4(wScaled);
+      const mseAwq =
+        xCalib.reduce(
+          (acc, x, k) =>
+            acc +
+            (yCalib[k]! -
+              matVec(
+                wAwqQuant,
+                x.map((v, i) => v / s[i]!),
+              )) **
+              2,
+          0,
+        ) / xCalib.length;
+      if (mseAwq < bestErr) {
+        bestErr = mseAwq;
+        bestAlpha = alpha;
+      }
+    }
 
-    assert.ok(errAwq < errRtn * 0.25, `expected AWQ error (${errAwq}) << RTN error (${errRtn})`);
+    assert.ok(bestAlpha > 0, 'grid search must select positive activation exponent alpha');
+    assert.ok(bestErr < mseRtn * 0.1, `expected AWQ MSE (${bestErr}) << RTN MSE (${mseRtn})`);
   });
 });

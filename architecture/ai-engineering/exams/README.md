@@ -3,7 +3,7 @@
 No single vendor-neutral certification covers the full AI Engineering lifecycle (RAG retrieval, agent harnesses, MCP, evaluations, LLMOps, and AI security). This matrix maps the **Senior AI Engineer Technical Interview Loop** alongside aligned objectives from **AWS Certified AI Practitioner (AIF-C01)** and **Microsoft Certified: Azure AI Engineer Associate (AI-200 / AI-102 successor alignment)** to the 7 modules, 3 executable proof suites, and 60-question bank in this track.
 
 > [!NOTE]
-> **Exam Scope Delta.** Cloud provider certifications (AWS AIF-C01, Azure AI-200) emphasize managed platform services (Bedrock Knowledge Bases, Azure AI Search, Content Safety) and high-level Responsible AI principles, whereas the Senior AI Engineer interview loop and this track additionally require protocol-level mastery of MCP 2026-07-28, LangGraph Pregel BSP execution, Ragas 0.4.4 math, disaggregated serving, ModelScan 0.8.8, and CycloneDX 1.7 ML-BOMs.
+> **Exam Scope Delta.** Cloud provider certifications (AWS AIF-C01: 65 questions / 90 min; Azure AI-200: 40–60 questions / 100 min) emphasize managed platform services (Bedrock Knowledge Bases, Azure AI Search, Content Safety) and high-level Responsible AI principles. Because no single vendor-neutral AI Engineering certification exists (AGENTS.md Priority 3), the 60-question bank and 40-question / 60-minute timed mock in this directory specifically model the **Senior AI Engineer Technical Interview written screen**, while cross-mapping aligned AWS AIF-C01 and Azure AI-200 concepts.
 
 ## Comprehensive Domain Coverage Matrix
 

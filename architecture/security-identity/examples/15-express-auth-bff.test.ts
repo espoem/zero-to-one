@@ -19,14 +19,16 @@ const CLIENT_ID = 'express-bff-client';
 const REDIRECT_URI = 'https://app.example.com/auth/callback';
 const API_AUDIENCE = 'https://orders-api.example.com';
 const SESSION_COOKIE = '__Host-sid';
+const TX_COOKIE = '__Host-auth-tx';
 
 function computeS256Challenge(verifier: string): string {
   return crypto.createHash('sha256').update(verifier, 'ascii').digest('base64url');
 }
 
 function computeAtHash(accessToken: string): string {
-  const digest = crypto.createHash('sha256').update(accessToken, 'ascii').digest();
-  return digest.subarray(0, 16).toString('base64url');
+  // OIDC Core 1.0 errata for Ed25519 (EdDSA) specifies SHA-512 (left-most 256 bits / 32 bytes).
+  const digest = crypto.createHash('sha512').update(accessToken, 'ascii').digest();
+  return digest.subarray(0, 32).toString('base64url');
 }
 
 function parseCookies(cookieHeader: string | undefined): Record<string, string> {
@@ -297,7 +299,7 @@ function buildBffApp(
   app.set('trust proxy', 1);
   app.use(express.json({ limit: '32kb' }));
 
-  const pendingTx = new Map<string, { nonce: string; verifier: string }>();
+  const pendingTx = new Map<string, { state: string; nonce: string; verifier: string }>();
   const sessions = new Map<string, BffSession>();
   const localJwks = jose.createLocalJWKSet(authServer.getJwks());
 
@@ -318,12 +320,18 @@ function buildBffApp(
   }
 
   app.get('/auth/login', (_req, res) => {
+    const txId = crypto.randomBytes(24).toString('base64url');
     const state = crypto.randomBytes(24).toString('base64url');
     const nonce = crypto.randomBytes(24).toString('base64url');
     const verifier = crypto.randomBytes(48).toString('base64url');
     const codeChallenge = computeS256Challenge(verifier);
-    pendingTx.set(state, { nonce, verifier });
+    pendingTx.set(txId, { state, nonce, verifier });
 
+    // Bind pending OIDC transaction to initiating browser to prevent login CSRF
+    res.setHeader(
+      'Set-Cookie',
+      `${TX_COOKIE}=${txId}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=300`,
+    );
     res.json({
       state,
       nonce,
@@ -343,9 +351,16 @@ function buildBffApp(
       return;
     }
 
-    const tx = pendingTx.get(state);
-    pendingTx.delete(state);
-    if (!tx) {
+    const txId = parseCookies(req.get('cookie'))[TX_COOKIE];
+    const tx = txId ? pendingTx.get(txId) : undefined;
+    if (txId) pendingTx.delete(txId);
+    const stateBuf = Buffer.from(state, 'utf8');
+    const expectedStateBuf = Buffer.from(tx?.state ?? '', 'utf8');
+    const stateMatches =
+      Boolean(tx) &&
+      stateBuf.length === expectedStateBuf.length &&
+      crypto.timingSafeEqual(stateBuf, expectedStateBuf);
+    if (!tx || !stateMatches) {
       res.status(400).json({ error: 'invalid_or_replayed_state' });
       return;
     }
@@ -392,11 +407,11 @@ function buildBffApp(
       refreshToken: tokens.refreshToken,
     });
 
-    // __Host- requires Secure + Path=/ + no Domain attribute
-    res.setHeader(
-      'Set-Cookie',
+    // __Host- requires Secure + Path=/ + no Domain attribute; clear __Host-auth-tx
+    res.setHeader('Set-Cookie', [
+      `${TX_COOKIE}=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0`,
       `${SESSION_COOKIE}=${sid}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=3600`,
-    );
+    ]);
     res.json({ authenticated: true, sub: idClaims.sub });
   });
 
@@ -478,6 +493,9 @@ describe('Module 15: Express 5 OAuth 2.1 BFF & RFC 8725 Resource API', async () 
   async function loginViaBff(): Promise<{ cookiePair: string; sid: string }> {
     const loginRes = await fetch(`${bffHost.baseUrl}/auth/login`);
     assert.equal(loginRes.status, 200);
+    const txSetCookie = loginRes.headers.get('set-cookie') ?? '';
+    assert.match(txSetCookie, /__Host-auth-tx=[^;]+; HttpOnly; Secure; SameSite=Lax; Path=\//);
+    const txCookiePair = txSetCookie.split(';')[0] ?? '';
     const loginData = (await loginRes.json()) as {
       state: string;
       nonce: string;
@@ -499,15 +517,16 @@ describe('Module 15: Express 5 OAuth 2.1 BFF & RFC 8725 Resource API', async () 
     cbUrl.searchParams.set('state', loginData.state);
     cbUrl.searchParams.set('iss', authz.iss);
 
-    const cbRes = await fetch(cbUrl);
+    const cbRes = await fetch(cbUrl, { headers: { cookie: txCookiePair } });
     assert.equal(cbRes.status, 200);
     const cbJson = (await cbRes.json()) as Record<string, unknown>;
     assert.equal(cbJson['sub'], 'alice-42');
     assert.equal(cbJson['accessToken'], undefined);
 
-    const setCookie = cbRes.headers.get('set-cookie') ?? '';
-    assert.match(setCookie, /__Host-sid=[^;]+; HttpOnly; Secure; SameSite=Lax; Path=\//);
-    const cookiePair = setCookie.split(';')[0] ?? '';
+    const setCookies = cbRes.headers.getSetCookie();
+    const sidCookieHeader = setCookies.find((c) => c.startsWith(`${SESSION_COOKIE}=`)) ?? '';
+    assert.match(sidCookieHeader, /__Host-sid=[^;]+; HttpOnly; Secure; SameSite=Lax; Path=\//);
+    const cookiePair = sidCookieHeader.split(';')[0] ?? '';
     const sid = cookiePair.slice(`${SESSION_COOKIE}=`.length);
     return { cookiePair, sid };
   }
@@ -530,7 +549,7 @@ describe('Module 15: Express 5 OAuth 2.1 BFF & RFC 8725 Resource API', async () 
     assert.equal(orderJson['item'], 'hardware-key');
   });
 
-  it('blocks RFC 9207 mix-up attacks, cross-site CSRF, and forwards async Express 5 errors', async () => {
+  it('blocks RFC 9207 mix-up attacks, login CSRF, cross-site CSRF, and forwards async Express 5 errors', async () => {
     const loginRes = await fetch(`${bffHost.baseUrl}/auth/login`);
     const loginData = (await loginRes.json()) as {
       state: string;
@@ -544,6 +563,15 @@ describe('Module 15: Express 5 OAuth 2.1 BFF & RFC 8725 Resource API', async () 
       codeChallengeMethod: 'S256',
       nonce: loginData.nonce,
     });
+
+    // Victim browser without the attacker's __Host-auth-tx cookie must reject the callback (login CSRF)
+    const loginCsrfUrl = new URL(`${bffHost.baseUrl}/auth/callback`);
+    loginCsrfUrl.searchParams.set('code', authz.code);
+    loginCsrfUrl.searchParams.set('state', loginData.state);
+    loginCsrfUrl.searchParams.set('iss', authz.iss);
+    const loginCsrfRes = await fetch(loginCsrfUrl);
+    assert.equal(loginCsrfRes.status, 400);
+    assert.deepEqual(await loginCsrfRes.json(), { error: 'invalid_or_replayed_state' });
 
     const mixupUrl = new URL(`${bffHost.baseUrl}/auth/callback`);
     mixupUrl.searchParams.set('code', authz.code);

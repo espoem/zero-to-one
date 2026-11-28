@@ -20,7 +20,7 @@ The leading factor `2` accounts for storing both `K` and `V` tensors. Per token 
 | **Llama-2-70B (GQA-8)** | `80` | `64` | `8` | `128` | `320 KiB/token` | `40.0 GiB` |
 | **Llama-3-8B (GQA-8)** | `32` | `32` | `8` | `128` | `128 KiB/token` | `16.0 GiB` |
 
-On a single `80 GB` H100 holding Llama-3-8B (`16 GiB` BF16 weights + `~4 GiB` workspace/activations = `~60 GiB` KV budget), maximum concurrency at $T = 131{,}072$ is $B_{\max} \approx \lfloor 60\text{ GiB} / 16\text{ GiB}\rfloor = 3$ sessions without compression! Every method below attacks a specific multiplicative factor in $M_{\text{KV}}$.
+On a single `80 GB` H100 (`~74.5 GiB` usable VRAM) holding Llama-3-8B (`16 GiB` BF16 weights + `~4 GiB` workspace/activations = `~54.5 GiB` KV budget), maximum concurrency at $T = 131{,}072$ is $B_{\max} \approx \lfloor 54.5\text{ GiB} / 16\text{ GiB}\rfloor = 3$ sessions without compression! Every method below attacks a specific multiplicative factor in $M_{\text{KV}}$.
 
 ---
 
@@ -46,7 +46,7 @@ $$\mathbf{c}_t^{KV} = W^{DKV}\mathbf{h}_t, \qquad \mathbf{k}_t^{C} = W^{UK}\math
 
 $$\mathrm{score}_{t,s} = \frac{\left[\mathbf{q}_{t,i}^{C};\, \mathbf{q}_{t,i}^{R}\right]^{\top}\left[\mathbf{k}_{s,i}^{C};\, \mathbf{k}_s^{R}\right]}{\sqrt{d_h + d_h^{R}}}$$
 
-- **Why RoPE decoupling & matrix absorption work**: Standard RoPE inserts a position-dependent rotation $R_{\Theta,s}$ between $W^{UK}$ and $W^{UQ}$, blocking algebraic folding. Decoupling the non-RoPE content path ($\mathbf{q}_{t,i}^C, \mathbf{k}_{s,i}^C$) lets inference absorb $W^{UK}$ directly into $W^{UQ}$ (and $W^{UV}$ into $W^O$), so **only $\mathbf{c}\_t^{KV}$ and $\mathbf{k}\_t^R$ are ever cached**—$K$ and $V$ matrices are never materialized in HBM!
+- **Why RoPE decoupling & matrix absorption work**: Standard RoPE inserts a position-dependent rotation $R_{\Theta,s}$ between $W^{UK}$ and $W^{UQ}$, blocking algebraic folding. Decoupling the non-RoPE content path ($\mathbf{q}_{t,i}^C, \mathbf{k}_{s,i}^C$) lets inference absorb $W^{UK}$ directly into $W^{UQ}$ (and $W^{UV}$ into $W^O$), so **only** $\mathbf{c}_t^{KV}$ and $\mathbf{k}_t^R$ **are ever cached**—$K$ and $V$ matrices are never materialized in HBM!
 - **Exact formula**: $M_{\text{KV}} = L\,(d_c + d_h^R)\,b\,T\,B$. For DeepSeek-V2 ($L=60$, $d_c=512$, $d_h^R=64$), this caches just `576` elements/layer = **67.5 KiB/token in BF16**.
 - **Analytical vs. end-to-end ratio**: Analytically against an MHA-128 baseline ($2 \times 128 \times 128 = 32{,}768$ elems/layer), $576 / 32{,}768 = 1.76\%$ ($\approx 56.9\times$ smaller per layer). Note that the paper's headline `"93.3% KV reduction"` compares DeepSeek-V2 end-to-end against DeepSeek 67B (which uses different $L$ and GQA/MHA geometry); always cite the baseline when quoting percentages.
 

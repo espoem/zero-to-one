@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import fc from 'fast-check';
 
 export interface McpMeta {
@@ -38,11 +38,32 @@ export interface McpToolResponse {
   };
 }
 
-export function dispatchMcpRequest(
-  req: McpToolRequest,
-  allowedTools: ReadonlySet<string>,
-  seenIds: Set<string>,
-): McpToolResponse {
+export interface PendingMcpApproval {
+  tool: string;
+  argsHash: string;
+  principalId: string;
+  expiresAtMs: number;
+}
+
+export interface McpSessionContext {
+  principalId: string;
+  allowedTools: ReadonlySet<string>;
+  seenIds: Set<string>;
+  pendingStates: Map<string, PendingMcpApproval>;
+  hostApprovedStates: Map<string, string>; // requestState -> verified approver principal
+  nowMs?: number;
+}
+
+export function hashAction(toolName: string, args: Record<string, unknown>): string {
+  const keys = Object.keys(args).sort();
+  const canonical: Record<string, unknown> = {};
+  for (const k of keys) canonical[k] = args[k];
+  return createHash('sha256')
+    .update(`${toolName}:${JSON.stringify(canonical)}`)
+    .digest('hex');
+}
+
+export function dispatchMcpRequest(req: McpToolRequest, ctx: McpSessionContext): McpToolResponse {
   // Stateless MCP 2026-07-28 required _meta validation
   if (!req._meta?.['io.modelcontextprotocol/protocolVersion'] || !req._meta?.clientCapabilities) {
     return {
@@ -55,7 +76,7 @@ export function dispatchMcpRequest(
     };
   }
 
-  if (seenIds.has(req.id)) {
+  if (ctx.seenIds.has(req.id)) {
     return {
       jsonrpc: '2.0',
       id: req.id,
@@ -65,9 +86,9 @@ export function dispatchMcpRequest(
       },
     };
   }
-  seenIds.add(req.id);
+  ctx.seenIds.add(req.id);
 
-  if (!allowedTools.has(req.params.name)) {
+  if (!ctx.allowedTools.has(req.params.name)) {
     return {
       jsonrpc: '2.0',
       id: req.id,
@@ -75,14 +96,64 @@ export function dispatchMcpRequest(
     };
   }
 
-  if (req.params.name === 'issue_refund' && !req.params.inputResponses?.['approvedBy']) {
+  if (req.params.name === 'issue_refund') {
+    const argsHash = hashAction(req.params.name, req.params.arguments);
+    const now = ctx.nowMs ?? 1_000_000;
+    const stateToken = req.params.requestState;
+
+    // Never trust client-supplied inputResponses.approvedBy without a matching host-verified requestState
+    if (!stateToken) {
+      const nonce = `state_${randomUUID()}`;
+      ctx.pendingStates.set(nonce, {
+        tool: req.params.name,
+        argsHash,
+        principalId: ctx.principalId,
+        expiresAtMs: now + 300_000,
+      });
+      return {
+        jsonrpc: '2.0',
+        id: req.id,
+        result: {
+          resultType: 'input_required',
+          requestState: nonce,
+          structuredContent: { prompt: 'HITL supervisor approval required for refund' },
+        },
+      };
+    }
+
+    const pending = ctx.pendingStates.get(stateToken);
+    ctx.pendingStates.delete(stateToken); // Single-use token
+    const verifiedApprover = ctx.hostApprovedStates.get(stateToken);
+    ctx.hostApprovedStates.delete(stateToken);
+
+    if (
+      !pending ||
+      now > pending.expiresAtMs ||
+      pending.tool !== req.params.name ||
+      pending.argsHash !== argsHash ||
+      pending.principalId !== ctx.principalId ||
+      !verifiedApprover
+    ) {
+      return {
+        jsonrpc: '2.0',
+        id: req.id,
+        error: {
+          code: -32602,
+          message: 'Invalid, expired, replayed, or argument-mismatched MRTR requestState',
+        },
+      };
+    }
+
     return {
       jsonrpc: '2.0',
       id: req.id,
       result: {
-        resultType: 'input_required',
-        requestState: 'state-refund-42',
-        structuredContent: { prompt: 'HITL supervisor approval required for refund' },
+        resultType: 'complete',
+        structuredContent: {
+          status: 'executed',
+          tool: req.params.name,
+          approvedBy: verifiedApprover,
+        },
       },
     };
   }
@@ -100,15 +171,19 @@ export function dispatchMcpRequest(
 export type HarnessTerminationReason =
   | 'COMPLETED'
   | 'STEP_BUDGET_EXHAUSTED'
+  | 'TOOL_BUDGET_EXHAUSTED'
   | 'COST_BUDGET_EXHAUSTED'
+  | 'DEADLINE_EXCEEDED'
   | 'CYCLE_DETECTED'
-  | 'HITL_INTERRUPT';
+  | 'HITL_INTERRUPT'
+  | 'PLAN_EXHAUSTED';
 
 export interface AgentStepAction {
   kind: 'tool' | 'finish' | 'hitl_pause';
   toolName?: string;
   args?: Record<string, unknown>;
   stepCostUsd: number;
+  durationMs?: number;
   requiresApproval?: boolean;
 }
 
@@ -116,7 +191,17 @@ export interface HarnessBudget {
   maxSteps: number;
   maxTools: number;
   maxCostUsd: number;
+  maxDurationMs: number;
   cycleThreshold: number;
+}
+
+export interface HarnessCheckpoint {
+  nextIndex: number;
+  stepsExecuted: number;
+  toolsCalled: number;
+  totalCostUsd: number;
+  elapsedMs: number;
+  pendingActionHash?: string;
 }
 
 export interface HarnessRunResult {
@@ -124,74 +209,110 @@ export interface HarnessRunResult {
   stepsExecuted: number;
   toolsCalled: number;
   totalCostUsd: number;
-  interruptPayload?: Record<string, unknown>;
-}
-
-function hashAction(toolName: string, args: Record<string, unknown>): string {
-  const keys = Object.keys(args).sort();
-  const canonical: Record<string, unknown> = {};
-  for (const k of keys) canonical[k] = args[k];
-  return createHash('sha256')
-    .update(`${toolName}:${JSON.stringify(canonical)}`)
-    .digest('hex');
+  elapsedMs: number;
+  checkpoint?: HarnessCheckpoint;
+  interruptPayload?: { tool: string; args: Record<string, unknown>; actionHash: string };
 }
 
 export function runBoundedAgentLoop(
   budget: HarnessBudget,
   allowedTools: ReadonlySet<string>,
   plannedActions: readonly AgentStepAction[],
-  hitlApproved = false,
+  options?: {
+    approvedActionHashes?: ReadonlySet<string>;
+    checkpoint?: HarnessCheckpoint;
+  },
 ): HarnessRunResult {
-  let stepsExecuted = 0;
-  let toolsCalled = 0;
-  let totalCostUsd = 0;
+  let stepsExecuted = options?.checkpoint?.stepsExecuted ?? 0;
+  let toolsCalled = options?.checkpoint?.toolsCalled ?? 0;
+  let totalCostUsd = options?.checkpoint?.totalCostUsd ?? 0;
+  let elapsedMs = options?.checkpoint?.elapsedMs ?? 0;
+  const startIdx = options?.checkpoint?.nextIndex ?? 0;
+  const approvedHashes = options?.approvedActionHashes ?? new Set<string>();
   const actionCounts = new Map<string, number>();
 
-  for (const action of plannedActions) {
+  for (let idx = startIdx; idx < plannedActions.length; idx++) {
+    const action = plannedActions[idx]!;
     if (stepsExecuted >= budget.maxSteps) {
-      return { status: 'STEP_BUDGET_EXHAUSTED', stepsExecuted, toolsCalled, totalCostUsd };
+      return {
+        status: 'STEP_BUDGET_EXHAUSTED',
+        stepsExecuted,
+        toolsCalled,
+        totalCostUsd,
+        elapsedMs,
+      };
     }
     if (totalCostUsd + action.stepCostUsd > budget.maxCostUsd) {
-      return { status: 'COST_BUDGET_EXHAUSTED', stepsExecuted, toolsCalled, totalCostUsd };
+      return {
+        status: 'COST_BUDGET_EXHAUSTED',
+        stepsExecuted,
+        toolsCalled,
+        totalCostUsd,
+        elapsedMs,
+      };
+    }
+    const stepDuration = action.durationMs ?? 100;
+    if (elapsedMs + stepDuration > budget.maxDurationMs) {
+      return { status: 'DEADLINE_EXCEEDED', stepsExecuted, toolsCalled, totalCostUsd, elapsedMs };
     }
 
-    stepsExecuted++;
-    totalCostUsd += action.stepCostUsd;
+    const toolName = action.toolName ?? 'unknown';
+    const args = action.args ?? {};
+    const actionHash = hashAction(toolName, args);
 
-    if (action.kind === 'finish') {
-      return { status: 'COMPLETED', stepsExecuted, toolsCalled, totalCostUsd };
-    }
-
-    if (action.kind === 'hitl_pause' || (action.requiresApproval && !hitlApproved)) {
+    if (
+      action.kind === 'hitl_pause' ||
+      (action.requiresApproval && !approvedHashes.has(actionHash))
+    ) {
       return {
         status: 'HITL_INTERRUPT',
         stepsExecuted,
         toolsCalled,
         totalCostUsd,
-        interruptPayload: { tool: action.toolName ?? 'unknown', args: action.args ?? {} },
+        elapsedMs,
+        checkpoint: {
+          nextIndex: idx,
+          stepsExecuted,
+          toolsCalled,
+          totalCostUsd,
+          elapsedMs,
+          pendingActionHash: actionHash,
+        },
+        interruptPayload: { tool: toolName, args, actionHash },
       };
+    }
+
+    stepsExecuted++;
+    totalCostUsd += action.stepCostUsd;
+    elapsedMs += stepDuration;
+
+    if (action.kind === 'finish') {
+      return { status: 'COMPLETED', stepsExecuted, toolsCalled, totalCostUsd, elapsedMs };
     }
 
     if (action.kind === 'tool') {
       if (toolsCalled >= budget.maxTools) {
-        return { status: 'STEP_BUDGET_EXHAUSTED', stepsExecuted, toolsCalled, totalCostUsd };
+        return {
+          status: 'TOOL_BUDGET_EXHAUSTED',
+          stepsExecuted,
+          toolsCalled,
+          totalCostUsd,
+          elapsedMs,
+        };
       }
-      const toolName = action.toolName ?? '';
-      const args = action.args ?? {};
-      if (!allowedTools.has(toolName)) {
+      if (!allowedTools.has(action.toolName ?? '')) {
         continue; // Blocked by host permission gate (counted as guardrail hit in telemetry)
       }
-      const sig = hashAction(toolName, args);
-      const count = (actionCounts.get(sig) ?? 0) + 1;
-      actionCounts.set(sig, count);
+      const count = (actionCounts.get(actionHash) ?? 0) + 1;
+      actionCounts.set(actionHash, count);
       if (count > budget.cycleThreshold) {
-        return { status: 'CYCLE_DETECTED', stepsExecuted, toolsCalled, totalCostUsd };
+        return { status: 'CYCLE_DETECTED', stepsExecuted, toolsCalled, totalCostUsd, elapsedMs };
       }
       toolsCalled++;
     }
   }
 
-  return { status: 'STEP_BUDGET_EXHAUSTED', stepsExecuted, toolsCalled, totalCostUsd };
+  return { status: 'PLAN_EXHAUSTED', stepsExecuted, toolsCalled, totalCostUsd, elapsedMs };
 }
 
 export interface AgentTaskTrace {
@@ -218,7 +339,13 @@ export interface AgentMetricsSummary {
   guardrailHitRate: number;
   overrideRate: number;
   costPerTaskUsd: number;
-  meanTimeToResolveMs: number;
+  p50TimeToResolveMs: number;
+  p90TimeToResolveMs: number;
+}
+
+function percentile(sorted: readonly number[], p: number): number {
+  const idx = Math.min(sorted.length - 1, Math.max(0, Math.ceil((p / 100) * sorted.length) - 1));
+  return sorted[idx] ?? 0;
 }
 
 export function computeAgentMetrics(
@@ -239,7 +366,7 @@ export function computeAgentMetrics(
   let overrides = 0;
   let proposals = 0;
   let totalCost = 0;
-  let totalMs = 0;
+  const resolveTimes: number[] = [];
 
   for (const t of traces) {
     if (t.succeeded) successes++;
@@ -253,8 +380,9 @@ export function computeAgentMetrics(
     proposals += t.agentProposals;
     totalCost +=
       t.inputTokens * pricePerInputToken + t.outputTokens * pricePerOutputToken + t.toolCallCostUsd;
-    totalMs += t.resolveMs;
+    resolveTimes.push(t.resolveMs);
   }
+  resolveTimes.sort((a, b) => a - b);
 
   return {
     taskSuccessRate: successes / n,
@@ -264,14 +392,21 @@ export function computeAgentMetrics(
     guardrailHitRate: totalActions === 0 ? 0 : guardrailHits / totalActions,
     overrideRate: proposals === 0 ? 0 : overrides / proposals,
     costPerTaskUsd: totalCost / n,
-    meanTimeToResolveMs: totalMs / n,
+    p50TimeToResolveMs: percentile(resolveTimes, 50),
+    p90TimeToResolveMs: percentile(resolveTimes, 90),
   };
 }
 
 describe('Bounded Agent Harness, MCP 2026-07-28 MRTR & 8 Operational Metrics', () => {
-  it('enforces MCP 2026-07-28 _meta, tool allowlists, and MRTR new JSON-RPC id requirement', () => {
-    const allowed = new Set(['lookup_order', 'issue_refund']);
-    const seenIds = new Set<string>();
+  it('enforces MCP 2026-07-28 _meta, tool allowlists, MRTR requestState binding, and new id rule', () => {
+    const ctx: McpSessionContext = {
+      principalId: 'user-42',
+      allowedTools: new Set(['lookup_order', 'issue_refund']),
+      seenIds: new Set<string>(),
+      pendingStates: new Map(),
+      hostApprovedStates: new Map(),
+      nowMs: 1_000_000,
+    };
 
     // Missing _meta protocolVersion -> -32602
     const badMeta = dispatchMcpRequest(
@@ -281,12 +416,32 @@ describe('Bounded Agent Harness, MCP 2026-07-28 MRTR & 8 Operational Metrics', (
         method: 'tools/call',
         params: { name: 'lookup_order', arguments: { id: 'ORD-1' } },
       },
-      allowed,
-      seenIds,
+      ctx,
     );
     assert.equal(badMeta.error?.code, -32602);
 
-    // Step 1 of MRTR: returns input_required + requestState
+    // Negative: client cannot bypass round 1 by sending spoofed inputResponses.approvedBy with no server state
+    const spoofedBypass = dispatchMcpRequest(
+      {
+        jsonrpc: '2.0',
+        id: 'req-spoof-1',
+        method: 'tools/call',
+        _meta: {
+          'io.modelcontextprotocol/protocolVersion': '2026-07-28',
+          clientCapabilities: { elicitation: {} },
+        },
+        params: {
+          name: 'issue_refund',
+          arguments: { orderId: 'ORD-1', amountCents: 2500 },
+          requestState: 'forged-state',
+          inputResponses: { approvedBy: 'supervisor-9' },
+        },
+      },
+      ctx,
+    );
+    assert.equal(spoofedBypass.error?.code, -32602);
+
+    // Step 1 of MRTR: returns input_required + opaque requestState
     const step1 = dispatchMcpRequest(
       {
         jsonrpc: '2.0',
@@ -298,17 +453,55 @@ describe('Bounded Agent Harness, MCP 2026-07-28 MRTR & 8 Operational Metrics', (
         },
         params: { name: 'issue_refund', arguments: { orderId: 'ORD-1', amountCents: 2500 } },
       },
-      allowed,
-      seenIds,
+      ctx,
     );
     assert.equal(step1.result?.resultType, 'input_required');
-    assert.equal(step1.result?.requestState, 'state-refund-42');
+    const state1 = step1.result?.requestState;
+    assert.ok(state1);
 
-    // Reusing req-1 violates MRTR new-id rule
+    // Host supervisor approves state1, then client tries tampering amountCents from 2500 -> 250000
+    ctx.hostApprovedStates.set(state1, 'supervisor-9');
+    const tamperedArgs = dispatchMcpRequest(
+      {
+        jsonrpc: '2.0',
+        id: 'req-tamper',
+        method: 'tools/call',
+        _meta: {
+          'io.modelcontextprotocol/protocolVersion': '2026-07-28',
+          clientCapabilities: { elicitation: {} },
+        },
+        params: {
+          name: 'issue_refund',
+          arguments: { orderId: 'ORD-1', amountCents: 250000 },
+          requestState: state1,
+          inputResponses: { approved: true },
+        },
+      },
+      ctx,
+    );
+    assert.equal(tamperedArgs.error?.code, -32602);
+
+    // Re-initiate legitimate MRTR flow, verify reused id fails (-32600), and fresh id succeeds with host approver
+    const step1b = dispatchMcpRequest(
+      {
+        jsonrpc: '2.0',
+        id: 'req-1b',
+        method: 'tools/call',
+        _meta: {
+          'io.modelcontextprotocol/protocolVersion': '2026-07-28',
+          clientCapabilities: { elicitation: {} },
+        },
+        params: { name: 'issue_refund', arguments: { orderId: 'ORD-1', amountCents: 2500 } },
+      },
+      ctx,
+    );
+    const state1b = step1b.result?.requestState ?? '';
+    ctx.hostApprovedStates.set(state1b, 'supervisor-9');
+
     const reusedId = dispatchMcpRequest(
       {
         jsonrpc: '2.0',
-        id: 'req-1',
+        id: 'req-1b',
         method: 'tools/call',
         _meta: {
           'io.modelcontextprotocol/protocolVersion': '2026-07-28',
@@ -317,16 +510,13 @@ describe('Bounded Agent Harness, MCP 2026-07-28 MRTR & 8 Operational Metrics', (
         params: {
           name: 'issue_refund',
           arguments: { orderId: 'ORD-1', amountCents: 2500 },
-          requestState: 'state-refund-42',
-          inputResponses: { approvedBy: 'supervisor-9' },
+          requestState: state1b,
         },
       },
-      allowed,
-      seenIds,
+      ctx,
     );
     assert.equal(reusedId.error?.code, -32600);
 
-    // Disallowed tool invocation must fail closed with JSON-RPC error -32601 (never -32021 MissingRequiredClientCapability)
     const forbidden = dispatchMcpRequest(
       {
         jsonrpc: '2.0',
@@ -338,12 +528,10 @@ describe('Bounded Agent Harness, MCP 2026-07-28 MRTR & 8 Operational Metrics', (
         },
         params: { name: 'drop_database', arguments: {} },
       },
-      allowed,
-      seenIds,
+      ctx,
     );
     assert.equal(forbidden.error?.code, -32601);
 
-    // Fresh id req-2 succeeds
     const step2 = dispatchMcpRequest(
       {
         jsonrpc: '2.0',
@@ -356,21 +544,22 @@ describe('Bounded Agent Harness, MCP 2026-07-28 MRTR & 8 Operational Metrics', (
         params: {
           name: 'issue_refund',
           arguments: { orderId: 'ORD-1', amountCents: 2500 },
-          requestState: 'state-refund-42',
-          inputResponses: { approvedBy: 'supervisor-9' },
+          requestState: state1b,
+          inputResponses: { approvedBy: 'forged-client-claim' }, // ignored in favor of hostApprovedStates
         },
       },
-      allowed,
-      seenIds,
+      ctx,
     );
     assert.equal(step2.result?.resultType, 'complete');
+    assert.equal(step2.result?.structuredContent?.['approvedBy'], 'supervisor-9');
   });
 
-  it('halts runaway duplicate tool loops via SHA-256 cycle detection and supports HITL resume', () => {
+  it('halts runaway duplicate loops, enforces deadline/tool budgets, and supports checkpointed action-bound HITL resume', () => {
     const budget: HarnessBudget = {
       maxSteps: 10,
       maxTools: 10,
       maxCostUsd: 1.0,
+      maxDurationMs: 2000,
       cycleThreshold: 2,
     };
     const allowed = new Set(['fetch_page', 'approve_wire']);
@@ -380,13 +569,42 @@ describe('Bounded Agent Harness, MCP 2026-07-28 MRTR & 8 Operational Metrics', (
       toolName: 'fetch_page',
       args: { cursor: 'stale-cursor', page: 1 },
       stepCostUsd: 0.02,
+      durationMs: 50,
     }));
 
     const loopResult = runBoundedAgentLoop(budget, allowed, infiniteLoop);
     assert.equal(loopResult.status, 'CYCLE_DETECTED');
     assert.equal(loopResult.stepsExecuted, 3);
 
-    // HITL interrupt before high-risk action, then resume with hitlApproved = true
+    // Wall-clock deadline exceeded check
+    const slowPlan: AgentStepAction[] = [
+      {
+        kind: 'tool',
+        toolName: 'fetch_page',
+        args: { page: 1 },
+        stepCostUsd: 0.01,
+        durationMs: 1200,
+      },
+      {
+        kind: 'tool',
+        toolName: 'fetch_page',
+        args: { page: 2 },
+        stepCostUsd: 0.01,
+        durationMs: 1000,
+      },
+    ];
+    assert.equal(runBoundedAgentLoop(budget, allowed, slowPlan).status, 'DEADLINE_EXCEEDED');
+
+    // Tool budget exhaustion check
+    assert.equal(
+      runBoundedAgentLoop({ ...budget, maxTools: 1 }, allowed, [
+        { kind: 'tool', toolName: 'fetch_page', args: { p: 1 }, stepCostUsd: 0.01 },
+        { kind: 'tool', toolName: 'fetch_page', args: { p: 2 }, stepCostUsd: 0.01 },
+      ]).status,
+      'TOOL_BUDGET_EXHAUSTED',
+    );
+
+    // HITL interrupt before approve_wire, then resume from checkpoint using only the exact approved actionHash
     const hitlPlan: AgentStepAction[] = [
       { kind: 'tool', toolName: 'fetch_page', args: { id: 'claim-9' }, stepCostUsd: 0.01 },
       {
@@ -399,15 +617,29 @@ describe('Bounded Agent Harness, MCP 2026-07-28 MRTR & 8 Operational Metrics', (
       { kind: 'finish', stepCostUsd: 0.01 },
     ];
 
-    const paused = runBoundedAgentLoop(budget, allowed, hitlPlan, false);
+    const paused = runBoundedAgentLoop(budget, allowed, hitlPlan);
     assert.equal(paused.status, 'HITL_INTERRUPT');
-    assert.equal(paused.interruptPayload?.['tool'], 'approve_wire');
+    assert.equal(paused.interruptPayload?.tool, 'approve_wire');
+    assert.equal(paused.checkpoint?.nextIndex, 1);
 
-    const resumed = runBoundedAgentLoop(budget, allowed, hitlPlan, true);
+    // Approving a different actionHash stays blocked at step 1
+    const wrongApproval = runBoundedAgentLoop(budget, allowed, hitlPlan, {
+      approvedActionHashes: new Set(['wrong-hash']),
+      checkpoint: paused.checkpoint,
+    });
+    assert.equal(wrongApproval.status, 'HITL_INTERRUPT');
+
+    // Exact actionHash resumes from checkpoint (step 1) without re-executing step 0
+    const resumed = runBoundedAgentLoop(budget, allowed, hitlPlan, {
+      approvedActionHashes: new Set([paused.interruptPayload!.actionHash]),
+      checkpoint: paused.checkpoint,
+    });
     assert.equal(resumed.status, 'COMPLETED');
+    assert.equal(resumed.stepsExecuted, 3);
+    assert.equal(resumed.toolsCalled, 2);
   });
 
-  it('computes all 8 agent operational metrics accurately and preserves rate bounds [0, 1]', () => {
+  it('computes all 8 agent operational metrics including p50/p90 TTR and preserves rate bounds [0, 1]', () => {
     const traces: AgentTaskTrace[] = [
       {
         succeeded: true,
@@ -449,7 +681,8 @@ describe('Bounded Agent Harness, MCP 2026-07-28 MRTR & 8 Operational Metrics', (
     assert.equal(summary.guardrailHitRate, 0.1);
     assert.equal(summary.overrideRate, 0.5);
     assert.ok(Math.abs(summary.costPerTaskUsd - 0.04) < 1e-9);
-    assert.equal(summary.meanTimeToResolveMs, 6000);
+    assert.equal(summary.p50TimeToResolveMs, 3200);
+    assert.equal(summary.p90TimeToResolveMs, 8800);
 
     fc.assert(
       fc.property(
@@ -485,6 +718,7 @@ describe('Bounded Agent Harness, MCP 2026-07-28 MRTR & 8 Operational Metrics', (
           assert.ok(m.guardrailHitRate >= 0 && m.guardrailHitRate <= 1);
           assert.ok(m.overrideRate >= 0 && m.overrideRate <= 1);
           assert.ok(m.costPerTaskUsd >= 0);
+          assert.ok(m.p90TimeToResolveMs >= m.p50TimeToResolveMs);
         },
       ),
     );

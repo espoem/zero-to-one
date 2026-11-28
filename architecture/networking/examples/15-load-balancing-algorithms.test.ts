@@ -299,7 +299,7 @@ describe('Module 13: Load Balancing Distribution Algorithms (L4 & L7)', () => {
       { id: 'srv-2', weight: 1 },
     ]);
 
-    // Simulate srv-0 holding 3 long-lived slow connections
+    // Simulate srv-0 holding 1 active connection while weighted srv-1 absorbs the next pick
     assert.equal(lc.acquire(), 'srv-0'); // srv-0: 1/1
     assert.equal(lc.acquire(), 'srv-1'); // srv-1: 1/2
     assert.equal(lc.acquire(), 'srv-2'); // srv-2: 1/1
@@ -353,7 +353,7 @@ describe('Module 13: Load Balancing Distribution Algorithms (L4 & L7)', () => {
     const backends = ['edge-0', 'edge-1', 'edge-2', 'edge-3', 'edge-4'];
     const ipHash = new IpHashBalancer(backends, true);
 
-    // 500 distinct CGNAT subscribers in 100.64.42.0/24 (RFC 6598)
+    // 250 distinct CGNAT subscribers in 100.64.42.0/24 (RFC 6598)
     const hitCounts = new Map<string, number>();
     for (let host = 1; host <= 250; host++) {
       const target = ipHash.route(`100.64.42.${host}`);

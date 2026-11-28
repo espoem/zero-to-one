@@ -54,13 +54,13 @@ Standard APM spans capture HTTP latency while remaining blind to token economics
 
 ### 3.1 Trace Hierarchy, Spans, and Metrics
 
-- **Canonical Span Tree**: `gen_ai.invoke_agent` $\to$ `gen_ai.plan` / `gen_ai.chat` $\to$ `gen_ai.retrieval` / `gen_ai.execute_tool` (plus `gen_ai.embeddings` and `gen_ai.memory`). Across MCP boundaries, propagate W3C `traceparent`, `tracestate`, and `baggage` inside the JSON-RPC `_meta` envelope.
-- **Required Span Attributes**: `gen_ai.provider.name`, `gen_ai.operation.name`, `gen_ai.request.model`, `gen_ai.response.model`, `gen_ai.response.finish_reasons`, `gen_ai.usage.input_tokens`, `gen_ai.usage.output_tokens`, `gen_ai.tool.name`, and `error.type`.
-- **Core Metric Instruments**: `gen_ai.client.operation.duration` (seconds), `gen_ai.server.request.duration`, `gen_ai.server.time_to_first_token`, `gen_ai.server.time_per_output_tokens`, `gen_ai.invoke_agent.duration`, `gen_ai.invoke_agent.inference_calls`, and `gen_ai.invoke_agent.tool_calls`.
+- **Span Naming & Tree**: Follow `{gen_ai.operation.name} {target}` (e.g., `invoke_agent {gen_ai.agent.name}` $\to$ `chat {gen_ai.request.model}` $\to$ `retrieval {source}` / `execute_tool {gen_ai.tool.name}`, plus `embeddings {model}`). Across MCP boundaries, propagate W3C `traceparent`, `tracestate`, and `baggage` inside the JSON-RPC `_meta` envelope.
+- **Span Attributes**: Required (`gen_ai.operation.name`, `gen_ai.provider.name`), conditionally required (`gen_ai.request.model`, `gen_ai.tool.name`, `error.type`), and recommended (`gen_ai.response.model`, `gen_ai.response.finish_reasons`, `gen_ai.usage.input_tokens`, `gen_ai.usage.output_tokens`).
+- **Core Metric Instruments**: `gen_ai.client.operation.duration` (seconds), `gen_ai.server.request.duration`, `gen_ai.server.time_to_first_token`, `gen_ai.server.time_per_output_token` (plus agent metrics `gen_ai.invoke_agent.duration`, `gen_ai.invoke_agent.inference_calls`, and `gen_ai.invoke_agent.tool_calls` where instrumented).
 
 ### 3.2 Privacy-Safe Content Capture Governance
 
-Logging full prompts and completions into shared observability backends creates severe PII and secret exposure (`LLM02`). OTel GenAI enforces explicit opt-in via `OTEL_INSTRUMENTATION_GENAI_CAPTURE_CONTENT`:
+Logging full prompts and completions into shared observability backends creates severe PII and secret exposure (`LLM02`). OTel GenAI enforces explicit opt-in via `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT`:
 
 | Setting | Behavior | Recommended Environment |
 | :-- | :-- | :-- |
@@ -79,7 +79,7 @@ flowchart LR
   Unit --> Eval["Offline Golden Eval Gate (Ragas + Agent Trajectory)"]
   Eval -->|"Pass Thresholds & Latency/Cost Budget"| Shadow["Shadow Traffic Mirroring (0% User Impact)"]
   Eval -->|"Regression Detected"| Block["Block Merge"]
-  Shadow -->|"Drift & Safety Clean"| Canary["Canary Rollout (1% → 10% → 100%)"]
+  Shadow -->|"Drift & Safety Clean"| Canary["Canary Rollout (1% → 10% → 50% → 100%)"]
 ```
 
 1. **Golden Eval Regression Gates**: Execute deterministic unit proofs (Validator Sandwich, tool allow-lists, JSON schemas) on every commit, followed by an offline golden suite measuring Ragas metrics, 8 agent metrics, and adversarial injection tests.
@@ -117,7 +117,7 @@ PagedAttention virtualizes the KV cache into fixed-size non-contiguous physical 
 
 <details><summary>Answer</summary>
 
-`OTEL_INSTRUMENTATION_GENAI_CAPTURE_CONTENT` defaults to `NO_CONTENT`, emitting structural attributes (`gen_ai.provider.name`, token counts, finish reasons, latencies) without prompt or completion text. When content inspection is explicitly required, teams scrub PII pre-egress and store payloads in access-controlled encrypted object storage referenced via `gen_ai.*_ref` attributes.
+`OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT` defaults to `NO_CONTENT`, emitting structural attributes (`gen_ai.provider.name`, token counts, finish reasons, latencies) without prompt or completion text. When content inspection is explicitly required, teams scrub PII pre-egress and store payloads in access-controlled encrypted object storage referenced via `gen_ai.*_ref` attributes.
 
 </details>
 

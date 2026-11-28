@@ -11,7 +11,7 @@ Every production agent harness must emit deterministic measurements for all eigh
 | # | Metric | Exact Mathematical Formula | Target / SLO & Alert Signal |
 | :-: | :-- | :-- | :-- |
 | **1** | **Task Success Rate** | $\text{TSR} = \dfrac{\text{successful tasks}}{\text{total tasks}}$ | Graded against deterministic end-state assertions or calibrated rubric (`>= 85%` gate) |
-| **2** | **Tool Accuracy** | $\text{TA} = \dfrac{\text{correct tool calls}}{\text{total tool calls}}$ | Evaluates tool selection **plus** schema-valid argument accuracy (`F1` on name + args, `>= 95%`) |
+| **2** | **Tool Accuracy** | $\text{TA} = \dfrac{\text{correct tool calls}}{\text{total tool calls}}$ | Evaluates exact tool name **plus** schema-valid arguments (`>= 95%`) |
 | **3** | **Steps Per Task** | $\mu_S = \dfrac{1}{N}\sum_{i=1}^{N} \text{steps}_i$ (track `p50` / `p95`) | Rising `p95` steps without TSR gain signals prompt drift, broken error hints, or loops |
 | **4** | **Escalation Rate** | $\text{ER} = \dfrac{\text{escalated to human}}{\text{total tasks}}$ | Must remain within human staffing capacity (`maxHitlQueueDepth`) |
 | **5** | **Guardrail Hit Rate** | $\text{GHR} = \dfrac{\text{blocked or rewritten actions}}{\text{total actions}}$ | Partition by `policy_id`; sudden spikes flag active attacks or miscalibrated prompts |
@@ -35,7 +35,7 @@ Grading only an agent's final prose answer misses dangerous intermediate behavio
 
 ## 3. RAG Evaluation (Ragas 0.4.4)
 
-Evaluating RAG end-to-end conflates retrieval failures with generator hallucinations. **Ragas** (`0.4.4` collections API — note the legacy metric API is removed in `1.0`) isolates retrieval vs. generation into four orthogonal metrics:
+Evaluating RAG end-to-end conflates retrieval failures with generator hallucinations. **Ragas** (`0.4.4` collections API — note the legacy metric API is removed in `1.0`) isolates retrieval vs. generation into five core metrics:
 
 ```mermaid
 flowchart LR
@@ -61,7 +61,9 @@ $$\text{ContextRecall} = \frac{|\{c \in C_{\text{ref}} : \text{attributable}(c, 
 
 $$\text{AnswerRelevancy} = \frac{1}{N} \sum_{i=1}^{N} \cos\!\left(E(q),\, E(q_i')\right)$$
 
-5. **Noise Sensitivity**: Evaluates answer accuracy as irrelevant distractor chunks are injected at increasing noise ratios (`10%`, `30%`, `60%`), exposing models vulnerable to distraction or Lost-in-the-Middle failures.
+5. **Noise Sensitivity**: Evaluates the fraction of claims in the generated response that are factually **incorrect** relative to the reference and attributable to retrieved context chunks (`relevant` or `irrelevant` context mode), exposing generators misled by distractor chunks (`0` optimal; lower is better):
+
+$$\text{NoiseSensitivity} = \frac{\lvert\{c \in C_{\text{ans}} : \text{incorrect}(c) \land \text{entailed}(c, \text{Context})\}\rvert}{\lvert C_{\text{ans}}\rvert}$$
 
 See [`examples/01-rag-hybrid-and-eval.test.ts`](../examples/01-rag-hybrid-and-eval.test.ts) for deterministic implementations of `faithfulness`, `contextPrecisionAtK`, and `contextRecall`.
 
@@ -69,7 +71,7 @@ See [`examples/01-rag-hybrid-and-eval.test.ts`](../examples/01-rag-hybrid-and-ev
 
 ## 4. LLM-as-a-Judge: Cognitive Biases & Statistical Calibration
 
-Using an LLM judge scales rubric grading across thousands of test cases, but raw LLM judges exhibit six systematic biases documented by Zheng et al. (`arXiv:2306.05685`):
+Using an LLM judge scales rubric grading across thousands of test cases, but raw LLM judges exhibit systematic biases — **Position**, **Verbosity**, and **Self-Enhancement** biases documented by Zheng et al. (`arXiv:2306.05685`), alongside **Authority**, **Format**, and **Leniency** biases documented in evaluation literature:
 
 | Judge Bias | Failure Symptom | Mandatory Engineering Control |
 | :-- | :-- | :-- |
@@ -86,7 +88,7 @@ Never trust an uncalibrated LLM judge. Score a stratified `100–300` sample wit
 
 $$\kappa = \frac{p_o - p_e}{1 - p_e}$$
 
-where $p_o$ is observed agreement and $p_e$ is expected agreement by chance. Require $\kappa \ge 0.75$ (substantial agreement) before gating deployments on an automated judge.
+where $p_o$ is observed agreement and $p_e$ is expected agreement by chance. Require $\kappa \ge 0.75$ (Fleiss's "excellent" agreement, 1981; exceeding Landis & Koch's 1977 `0.61` "substantial" threshold) before gating deployments on an automated judge.
 
 ---
 
@@ -144,6 +146,6 @@ Combining agent compute latency (`2–15 s`) with human approval queue wait time
 
 <details><summary>Answer</summary>
 
-Calibrate the judge against human domain experts on a stratified golden sample (`100–300` examples), control for position (A/B swap), verbosity, and self-enhancement (cross-family judge) biases, and verify chance-corrected agreement via Cohen's $\kappa \ge 0.75$ before enabling automated CI gates.
+Calibrate the judge against human domain experts on a stratified golden sample (`100–300` examples), control for position (A/B swap), verbosity, and self-enhancement (cross-family judge) biases, and verify chance-corrected agreement via Cohen's $\kappa \ge 0.75$ (Fleiss's "excellent" threshold) before enabling automated CI gates.
 
 </details>

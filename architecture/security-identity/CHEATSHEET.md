@@ -286,7 +286,7 @@ Authentication proves _who_ the principal is (AuthN); authorization decides _wha
 | **Verification Seam** | Redis/DB session lookup per request | Local CPU signature check via cached JWKS | Network RPC to AS `/introspect` endpoint |
 | **Revocation Velocity** | **Instant** (delete key in Redis) | **Delayed** until `exp` (unless denylisted) | **Instant** (AS marks token inactive) |
 | **Wire Payload Size** | Minimal (~32–64 bytes in `Cookie`) | Large (~600–2,000 bytes in `Authorization`) | Minimal (~32–64 bytes in `Authorization`) |
-| **Browser Surface** | XSS-proof (`HttpOnly`), needs CSRF defense | High XSS risk if stored in JS storage | Intended for BFF/backend-to-backend |
+| **Browser Surface** | Tokens non-exfiltrable (`HttpOnly`); XSS can still ride the session (needs CSP + CSRF defense) | High XSS risk if stored in JS storage | Intended for BFF/backend-to-backend |
 | **Primary Use Case** | Browser web apps & BFF sessions | Microservice APIs & short-lived access tokens | Centralized kill-switch & third-party APIs |
 
 ### JWT Deep Dive: Claims, Typing, Lifecycle & Attack Mitigations
@@ -340,7 +340,7 @@ RFC 7519 defines seven standard **registered claims**; RFC 9068, OIDC Core 1.0, 
 
 | Storage Strategy | XSS Exposure | CSRF Exposure | Production Verdict |
 | :-- | :-- | :-- | :-- |
-| **BFF + `__Host-` Cookie (`HttpOnly; Secure; SameSite=Lax`)** | **Immune** (tokens stay server-side) | Mitigated via `SameSite` + `Sec-Fetch-Site` / CSRF token | **Default recommendation for web apps**. |
+| **BFF + `__Host-` Cookie (`HttpOnly; Secure; SameSite=Lax`)** | Tokens cannot be exfiltrated by JS; same-origin XSS can still ride the session (pair with strict CSP) | Mitigated via `SameSite` + `Sec-Fetch-Site` / CSRF token | **Default recommendation for web apps**. |
 | **In-Memory JS + DPoP (RFC 9449)** | Same-session XSS can invoke proof key | Immune (explicit `Authorization: DPoP` header) | Acceptable when BFF is infeasible; lost on tab reload. |
 | **`localStorage` / `sessionStorage`** | **Fatal** (any XSS reads bearer tokens) | Immune | **Anti-pattern**; never store long-lived tokens or refresh tokens here. |
 

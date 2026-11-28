@@ -397,12 +397,12 @@ You run `cross_val_score(LogisticRegression(), X_scaled, y, cv=5)` where `X_scal
 
 ### Q-MLF-020 · Core Neural Architectures (MLP, CNN, LSTM) · difficulty 1 · single
 
-What does Hornik's (1991) Universal Approximation Theorem prove, and what does it **not** guarantee?
+What do Universal Approximation Theorems (Cybenko 1989, Hornik 1991, Leshno et al. 1993) prove, and what do they **not** guarantee?
 
-- A) It proves any 2-layer network with polynomial activations can represent arbitrary functions in $\mathcal{O}(n)$ weights.
-- B) It proves a single hidden layer with non-polynomial continuous activation is dense in $C(K)$ on compact $K$, but does **not** guarantee polynomial width (shallow parity/compositional functions can require $\mathcal{O}(2^n)$ units) or gradient-descent learnability.
-- C) It proves MLPs are translation equivariant on images without convolutions.
-- D) It proves deeper networks always overfit more than wide 2-layer networks.
+- A) They prove any 2-layer network with polynomial activations can represent arbitrary functions in $\mathcal{O}(n)$ weights.
+- B) They prove a single hidden layer with a continuous bounded non-constant activation (Hornik 1991) or any locally bounded piecewise continuous non-polynomial activation (Leshno et al. 1993) is dense in $C(K)$ on compact $K$, but do **not** guarantee polynomial width (shallow parity/compositional functions can require $\mathcal{O}(2^n)$ units) or gradient-descent learnability.
+- C) They prove MLPs are translation equivariant on images without convolutions.
+- D) They prove deeper networks always overfit more than wide 2-layer networks.
 
 <details><summary>Answer</summary>
 
@@ -488,9 +488,9 @@ A CNN stem consists of three sequential layers (dilation $d=1$): Layer 1 ($k=5, 
 
 **C.** Step-by-step: $L_1: r_1 = 1 + (5-1)\cdot 1 = 5,\ j_1 = 2$. $L_2: r_2 = 5 + (3-1)\cdot 2 = 9,\ j_2 = 4$. $L_3: r_3 = 9 + (3-1)\cdot 4 = 17$.
 
-- Why not A: `9` is $r_2$, stopping one layer early (or ignoring stride scaling).
-- Why not B: `11` sums $(k_l - 1)$ without multiplying by cumulative stride jump $j_{l-1}$.
-- Why not D: `21` misapplies $j_l$ instead of $j_{l-1}$ inside $r_l$.
+- Why not A: `9` is $r_2$, stopping one layer early (or ignoring stride scaling across all 3 layers).
+- Why not B: `11` merely sums kernel sizes $\sum k_l = 5 + 3 + 3$ instead of applying $(k_l - 1)j_{l-1}$.
+- Why not D: `21` reflects an incorrect heuristic scaling; substituting $j_l$ instead of $j_{l-1}$ gives $25$.
 - Ref: [modules/03-neural-networks-mlp-cnn-lstm.md](../modules/03-neural-networks-mlp-cnn-lstm.md), https://arxiv.org/abs/1701.04128
 
 </details>
@@ -709,7 +709,7 @@ How does DDPM's simplified training loss $\mathcal{L}_{\text{simple}} = \mathbb{
 
 <details><summary>Answer</summary>
 
-**B.** Each KL term $D_{\mathrm{KL}}(q(\mathbf{x}_{t-1}\mid\mathbf{x}_t,\mathbf{x}*0) \Vert p*\theta(\mathbf{x}_{t-1}\mid\mathbf{x}_t))$ simplifies to a weighted MSE between true $\boldsymbol{\varepsilon}$ and $\boldsymbol{\varepsilon}_\theta$; Ho et al. showed dropping the $\lambda_t$ prefactor improves sample quality across scales.
+**B.** Each KL term $D_{\mathrm{KL}}(q(x_{t-1}\mid x_t,x_0) \Vert p_\theta(x_{t-1}\mid x_t))$ simplifies to a weighted MSE between true $\varepsilon$ and $\varepsilon_\theta$; Ho et al. showed dropping the $\lambda_t$ prefactor improves sample quality across scales.
 
 - Why not A: $\mathcal{L}_{\text{vlb}}$ weights small-$t$ terms much more heavily than $\mathcal{L}_{\text{simple}}$.
 - Why not C: DDPM has no adversarial discriminator.
@@ -723,7 +723,7 @@ How does DDPM's simplified training loss $\mathcal{L}_{\text{simple}} = \mathbb{
 In Kipf & Welling's Graph Convolutional Network (GCN) update $H^{(l+1)} = \sigma(\tilde D^{-1/2}\tilde A \tilde D^{-1/2} H^{(l)} W^{(l)})$, what is $\tilde A$, and why is symmetric renormalization $\tilde D^{-1/2}\tilde A\tilde D^{-1/2}$ applied?
 
 - A) $\tilde A = A - I$; normalization doubles gradients on hub nodes.
-- B) $\tilde A = A + I$ adds self-loops so nodes retain their own features, and $\tilde D^{-1/2}\tilde A\tilde D^{-1/2}$ bounds eigenvalues in $[0, 2]$ (spectral stability) to prevent feature magnitudes from exploding or vanishing across layers on high-degree hubs.
+- B) $\tilde A = A + I$ adds self-loops so nodes retain their own features, and the renormalization $\tilde D^{-1/2}\tilde A\tilde D^{-1/2}$ maps the eigenvalue range of $I + D^{-1/2}AD^{-1/2}$ from $[0, 2]$ into $(-1, 1]$ (spectral radius $1$) to prevent feature magnitudes from exploding across layers on high-degree hubs.
 - C) $\tilde A$ is a dense learned attention matrix over all $N^2$ node pairs.
 - D) Symmetric normalization guarantees infinite-depth GCNs never over-smooth.
 
@@ -823,7 +823,7 @@ Compute the BF16 ($b = 2$ bytes) KV-cache footprint **per token** for Llama-2-7B
 
 ### Q-MLF-041 · LLM KV-Cache Compression & Inference Math · difficulty 3 · scenario
 
-You serve Llama-3-8B (`16 GiB` BF16 weights + `4 GiB` runtime/activation headroom) on a single `80 GiB` H100 GPU with `128 KiB/token` KV cache. What is the maximum batch concurrency $B_{\max}$ at context $T = 131{,}072$ tokens before eviction or compression?
+You serve Llama-3-8B (`16 GiB` BF16 weights + `4 GiB` runtime/activation headroom) on a single `80 GB` (`~74.5 GiB` usable) H100 GPU with `128 KiB/token` KV cache. What is the maximum batch concurrency $B_{\max}$ at context $T = 131{,}072$ tokens before eviction or compression?
 
 - A) `1` session
 - B) `3` sessions
@@ -832,7 +832,7 @@ You serve Llama-3-8B (`16 GiB` BF16 weights + `4 GiB` runtime/activation headroo
 
 <details><summary>Answer</summary>
 
-**B.** Available KV VRAM is $80 - 16 - 4 = 60\text{ GiB}$. One `131,072`-token sequence consumes $131{,}072 \times 128\text{ KiB} = 16\text{ GiB}$. Thus $B_{\max} = \lfloor 60 / 16 \rfloor = 3$ concurrent sequences!
+**B.** Available KV VRAM is $74.5 - 16 - 4 \approx 54.5\text{ GiB}$. One `131,072`-token sequence consumes $131{,}072 \times 128\text{ KiB} = 16\text{ GiB}$. Thus $B_{\max} = \lfloor 54.5 / 16 \rfloor = 3$ concurrent sequences!
 
 - Why not A: `16 GiB` leaves room for `3` sequences inside `60 GiB`, not `1`.
 - Why not C: `12` sessions would require `192 GiB` of KV cache alone.
@@ -1049,7 +1049,7 @@ Why does **symmetric** uniform quantization ($z = 0, q \in [-(2^{b-1}-1), 2^{b-1
 How does **Quantization-Aware Training (QAT)** backpropagate gradients through discrete rounding operations $\hat{w} = \lfloor w/s \rceil$ whose true derivative is zero almost everywhere?
 
 - A) It replaces rounding with a cubic spline in the forward pass too.
-- B) It applies the **Straight-Through Estimator (STE)** in the backward pass: $\frac{\partial \mathcal{L}}{\partial w} \approx \frac{\partial \mathcal{L}}{\partial \hat{w}} \cdot \mathbb{I}(w \in [q_{\min}s, q_{\max}s])$, passing upstream gradients unchanged inside the clamp bounds while preserving exact quantized values in the forward pass.
+- B) It applies the **Straight-Through Estimator (STE)** in the backward pass: $\frac{\partial \mathcal{L}}{\partial w} \approx \frac{\partial \mathcal{L}}{\partial \hat{w}} \cdot \mathbb{I}(w \in [(q_{\min}-z)s, (q_{\max}-z)s])$, passing upstream gradients unchanged inside the clamp bounds while preserving exact quantized values in the forward pass.
 - C) It freezes all weights below `0.1` and only updates bias vectors.
 - D) It computes finite-difference gradients across every weight sequentially.
 
@@ -1066,7 +1066,9 @@ How does **Quantization-Aware Training (QAT)** backpropagate gradients through d
 
 ### Q-MLF-053 · Quantization & Production Drift Monitoring · difficulty 3 · single
 
-In **GPTQ** (Frantar et al. 2022), after quantizing weight column $j$ with error $w_j - \hat{w}_j$, what does the second-order Hessian update $\boldsymbol{\delta} = -\frac{w_j - \hat{w}*j}{[\mathbf{H}^{-1}]*{jj}}\mathbf{H}^{-1}_{:,j}$ ($\mathbf{H} = 2XX^\top$) accomplish?
+In **GPTQ** (Frantar et al. 2022), after quantizing weight column $j$ with error $(w_j - \hat{w}_j)$, what does the second-order Hessian update ($\mathbf{H} = 2XX^\top$) below accomplish?
+
+$$\boldsymbol{\delta} = -\frac{w_j - \hat{w}_j}{[\mathbf{H}^{-1}]_{jj}}\mathbf{H}^{-1}_{:,j}$$
 
 - A) It deletes column $j$ from the layer matrix permanently.
 - B) It adjusts all remaining unquantized columns $W_{:,j+1:}$ to cancel out the layer output reconstruction error $\Delta(WX)$ caused by rounding column $j$, outperforming round-to-nearest dramatically at 3–4 bits.
@@ -1089,7 +1091,7 @@ In **GPTQ** (Frantar et al. 2022), after quantizing weight column $j$ with error
 How does **AWQ** (Lin et al. 2023) avoid mixed-precision hardware complexity while still protecting the `~1%` most important weights during INT4 PTQ?
 
 - A) It keeps `1%` of weights in FP16 and uses sparse CSR indexing.
-- B) It identifies salient channels from **activation magnitudes** ($s_j = (\max\lvert X_{:,j}\rvert)^\alpha$) rather than weight magnitudes, then multiplies those salient weight columns by $s_j$ and scales runtime activations by $1/s_j$ ($y = (W\,\mathrm{diag}(\mathbf{s}))(\mathrm{diag}(\mathbf{s})^{-1}\mathbf{x})$) so all weights remain uniform INT4.
+- B) It identifies salient channels from **per-channel average activation magnitudes** ($s_j = (\mathrm{mean}\lvert X_{:,j}\rvert)^\alpha$) rather than weight magnitudes, then multiplies those salient weight columns by $s_j$ and scales runtime activations by $1/s_j$ ($y = (W\,\mathrm{diag}(\mathbf{s}))(\mathrm{diag}(\mathbf{s})^{-1}\mathbf{x})$) so all weights remain uniform INT4.
 - C) It clips the top `1%` largest activations to zero.
 - D) It runs full Cholesky Hessian inversion on every token.
 
@@ -1118,7 +1120,7 @@ You must deploy a `70B`-parameter LLM (`~140 GB` BF16 weights) onto a single `80
 **C.** INT4 (`0.5 B/param` + `g=128` scale metadata $\approx 39\text{–}42\text{ GB}$) fits easily on one `80 GB` H100 while leaving `~35+ GB` for active KV-cache batches.
 
 - Why not A: `140 GB` weights exceed a single `80 GB` GPU before loading any KV cache.
-- Why not B: `~70 GB` FP8 weights fit on `80 GB` with almost zero room (`< 6 GB`) for long-context KV batches.
+- Why not B: `~70 GB` FP8 weights leave `~10 GB` gross (`< 10 GB` after CUDA context and activations), far below the required `30+ GB` KV budget.
 - Why not D: `280 GB` requires 4+ GPUs.
 - Ref: [modules/06-quantization-and-ml-monitoring.md](../modules/06-quantization-and-ml-monitoring.md), https://arxiv.org/abs/2306.00978
 
@@ -1160,7 +1162,7 @@ Under the standard credit-risk convention (Siddiqi 2006), how are **Population S
 - Why not B: Recomputing quantile edges on live data hides global mean/scale shifts!
 - Why not C: PSI carries no $p$-value; `0.10 / 0.25` are empirical heuristics that vary with bin count.
 - Why not D: Because $(p_i - q_i)\ln(p_i/q_i) \ge 0$ term-by-term, PSI is always non-negative.
-- Ref: [modules/06-quantization-and-ml-monitoring.md](../modules/06-quantization-and-ml-monitoring.md), https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ks_2samp.html
+- Ref: [modules/06-quantization-and-ml-monitoring.md](../modules/06-quantization-and-ml-monitoring.md), Siddiqi (2006) _Credit Risk Scorecards_, https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.entropy.html
 
 </details>
 
@@ -1169,7 +1171,7 @@ Under the standard credit-risk convention (Siddiqi 2006), how are **Population S
 Your monitoring job runs `scipy.stats.ks_2samp(ref, act, method="asymp")` daily on `n = 1,000,000` reference and `m = 1,000,000` live inference predictions. Yesterday it reported $D_{n,m} = 0.004$ with $p = 2.4 \times 10^{-7}$ and paged on-call to retrain. Should you retrain?
 
 - A) Yes, because $p < 0.001$ proves severe production model decay.
-- B) No: at `n = m = 1,000,000`, the KS rejection threshold $1.358\sqrt{\frac{n+m}{nm}} \approx 0.0019$ makes microscopic, operationally meaningless shifts statistically significant; gate alerts on **effect size $D\_{n,m}$**, **PSI**, and business metric impact instead of raw $p$-value.
+- B) No: at `n = m = 1,000,000`, the KS rejection threshold $1.358\sqrt{\frac{n+m}{nm}} \approx 0.0019$ makes microscopic, operationally meaningless shifts statistically significant; gate alerts on **effect size** $D_{n,m}$, **PSI**, and business metric impact instead of raw $p$-value.
 - C) Switch `method="asymp"` to `method="exact"` to make the $p$-value larger at `N = 1,000,000`.
 - D) Replace KS with `StandardScaler` on the predictions.
 
@@ -1232,6 +1234,7 @@ Simulate a Senior ML Engineer written screen or `MLA-C01` technical sprint using
 - **Time limit**: **60 minutes** (`90 seconds` per question). Complete all 40 questions before opening any `<details>` answer block.
 - **Scoring & Readiness Key** (`1 point` per exact match; `multi` questions require all correct options with no wrong options):
   - **Fail / Review needed**: `< 26 / 40` (`< 65%`)
+  - **Borderline (close gaps in weak domains)**: `26 – 28 / 40` (`65% – 70%`)
   - **Pass / Senior ML Engineer Ready (`MLA-C01` 720-equivalent)**: `29 – 33 / 40` (`72.5% – 82.5%`)
   - **Distinction / Staff ML Level**: `>= 34 / 40` (`>= 85%`)
 

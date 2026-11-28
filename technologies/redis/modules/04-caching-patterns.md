@@ -174,7 +174,7 @@ Practical defences, in order of cost:
 | Short TTL on every entry | `SET … EX` always, never persistent cache keys | Bounded staleness = TTL. |
 | Delete after commit, not before | Run `DEL` in the DB transaction's after-commit hook | Race 2 above. |
 | Delayed double delete | `DEL` now and again after ~1 s (a delayed job or a `ZADD` scheduler) | Reduces race 2 to readers slower than the delay. |
-| Versioned writes | Store `{version, value}`; write with a script that refuses to overwrite a higher version (or `SET … IFDEQ` digest checks on 8.4+) | Needs a monotonic version from the SoT (row version, `xmin`, updated-at). |
+| Versioned writes | Store `{version, value}`; write with a Lua/Redis Function script that refuses to overwrite a higher version (`SET … IFDEQ` on 8.4+ does optimistic CAS on the exact old value digest) | Needs a monotonic version from the SoT (row version, `xmin`, updated-at). |
 | Change data capture | A CDC consumer (e.g. Debezium on the PostgreSQL WAL) deletes or updates cache keys in commit order | Lag, and one more system to operate ([data-systems M07](../../../architecture/data-systems/modules/07-replication-mechanics-and-consensus.md#4-physical-versus-logical-replication-and-change-data-capture-cdc)). |
 
 The honest interview answer: with cache-aside you get _eventual_ consistency with a staleness bound equal to the TTL, and invalidation makes stale reads rare, not impossible. If a read must be fresh (balances, permissions), read the SoT.

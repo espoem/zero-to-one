@@ -134,22 +134,25 @@ $$\text{Score}(D, Q) = \sum_{i=1}^{n} \text{IDF}(q_i) \cdot \frac{f(q_i, D) \cdo
 
 ### MVCC Snapshot Visibility Invariants
 
-$$ \text{Visible}(T_{\text{snapshot}}, \text{row}) \iff \begin{cases}
+$$
+\text{Visible}(T_{\text{snapshot}}, \text{row}) \iff \begin{cases}
 \text{row.xmin} \in \text{Committed} \land \text{row.xmin} < T_{\text{snapshot.id}} \land \text{row.xmin} \notin \text{ActiveTxns} \\
 \land \; (\text{row.xmax} = 0 \lor \text{row.xmax} > T_{\text{snapshot.id}} \lor \text{row.xmax} \in \text{ActiveTxns} \lor \text{row.xmax} \in \text{Aborted})
-\end{cases}$$
+\end{cases}
+$$
 
 ---
 
 ## 6. Durability, WAL & ARIES Recovery
 
 ### Buffer Policy Invariants
+
 - **Steal**: Uncommitted pages flushed to disk $\implies$ **Requires UNDO logging**.
 - **No-Force**: Committed transactions not forced to disk pages $\implies$ **Requires REDO logging**.
-- **WAL Flush Invariant**:
-  $$\text{PageLSN} \le \text{FlushedToDiskLSN}$$
+- **WAL Flush Invariant**: $$\text{PageLSN} \le \text{FlushedToDiskLSN}$$
 
 ### ARIES 3-Pass Recovery Algorithm
+
 ```
            Checkpoint
                 |
@@ -159,21 +162,24 @@ Log Stream: ----C-------[Smallest recLSN in DPT]--------CRASH
 2. Redo:                +-------------------------------->+  Scan forward from min(recLSN). Repeat History.
 3. Undo:                <---------------------------------+  Scan backward. Roll back Losers. Write CLRs.
 ```
-- **Compensation Log Record (CLR)**: `[LSN, TxnId, Type=CLR, UndoNextLSN=PrevLSN, Action]` *Infallible idempotency: Recovery never undos a CLR.*
+
+- **Compensation Log Record (CLR)**: `[LSN, TxnId, Type=CLR, UndoNextLSN=PrevLSN, Action]` _Infallible idempotency: Recovery never undos a CLR._
 
 ---
 
 ## 7. Distributed Replication & Quorum Rules
 
 ### Quorum Intersection Inequality
+
 $$W + R > N$$
+
 - $N$: Replication factor (total replicas).
 - $W$: Write quorum acknowledgment threshold.
 - $R$: Read quorum response threshold.
-- **Pigeonhole Proof**: If $W + R = N + 1$, the write set and read set must intersect on at least 1 node:
-  $$|W \cap R| = W + R - N \ge 1$$
+- **Pigeonhole Proof**: If $W + R = N + 1$, the write set and read set must intersect on at least 1 node: $$|W \cap R| = W + R - N \ge 1$$
 
 ### Distributed Locking & Fencing Tokens
+
 ```
 Client 1: [Acquire Lock] ------------> (Lease: Token=31) ----[GC Pause 60s]----> [Write Storage (Token=31)] -> REJECT!
 Client 2:               [Acquire Lock] -----------------> (Lease: Token=32) ---> [Write Storage (Token=32)] -> ACCEPT (32 > 31)
@@ -184,30 +190,35 @@ Client 2:               [Acquire Lock] -----------------> (Lease: Token=32) --->
 ## 8. Partitioning & Consistent Hashing
 
 ### Consistent Hash Ring Equations
+
 - Key position: $H(k) = \text{Hash}(k) \pmod{2^{32}}$
 - Node assignment: First node on ring where $H(\text{Node}) \ge H(k)$ (wrap-around to 0).
-- **Migration Fraction**: When adding $(N+1)$-th node with uniform vnodes:
-  $$\Delta_{\text{migrated}} = \frac{1}{N + 1}$$
+- **Migration Fraction**: When adding $(N+1)$-th node with uniform vnodes: $$\Delta_{\text{migrated}} = \frac{1}{N + 1}$$
 - Standard Vnode Count: $V \in [128, 256]$ vnodes per physical node reduces standard deviation $\sigma < 5\%$.
 
 ### Scatter-Gather Tail Latency
+
 $$P(\text{Query Latency} > T) = 1 - (1 - p)^S$$
+
 - $S$: Shard fan-out count.
 - $p$: Probability of individual shard latency spike.
-- *Example*: For $S = 100$ shards and $p = 1\%$, query spike probability $= 1 - (0.99)^{100} = 63.4\%$.
+- _Example_: For $S = 100$ shards and $p = 1\%$, query spike probability $= 1 - (0.99)^{100} = 63.4\%$.
 
 ---
 
 ## 9. Caching Patterns & Stampede Mitigation
 
 ### Cache-Aside Safe Invalidation Sequence
+
 1. Application begins database transaction.
 2. Application updates persistent database record.
 3. Database commits transaction durably.
-4. Application executes: `Cache.delete(key)` *(Invalidation avoids race conditions of write-to-cache)*.
+4. Application executes: `Cache.delete(key)` _(Invalidation avoids race conditions of write-to-cache)_.
 
 ### Probabilistic Early Expiration (The XFetch Algorithm)
+
 $$-\beta \cdot \delta \cdot \ln(\text{rand}()) > \text{TTL}_{\text{remaining}}$$
+
 - $\delta$: Time taken to compute the value from the database (in seconds/ms).
 - $\beta > 0$: Aggressiveness parameter (default $\beta = 1.0$).
 - $\text{rand}() \sim U(0, 1)$: Uniform random variable.
@@ -218,6 +229,7 @@ $$-\beta \cdot \delta \cdot \ln(\text{rand}()) > \text{TTL}_{\text{remaining}}$$
 ## 10. Binary Wire Serialization & Encoding
 
 ### Varint (7-Bit Payload) Bitwise Masks
+
 ```
 Byte format: [ Continuation Bit (1=more, 0=last) | 7 bits of data ]
 Encoding 300 (0x012C):
@@ -228,15 +240,20 @@ Encoding 300 (0x012C):
 ```
 
 ### ZigZag Signed Encoding Formula
-$$\text{ZigZag}(n) = \begin{cases}
+
+$$
+\text{ZigZag}(n) = \begin{cases}
 (n \ll 1) \oplus (n \gg 31) & \text{for 32-bit signed integer} \\
 (n \ll 1) \oplus (n \gg 63) & \text{for 64-bit signed integer}
-\end{cases}$$
+\end{cases}
+$$
+
 - Maps: $0 \rightarrow 0, -1 \rightarrow 1, 1 \rightarrow 2, -2 \rightarrow 3, 2 \rightarrow 4$.
 
 ### Schema Evolution Rules
+
 | Evolution Mode | New Reader Reads Old Data? | Old Reader Reads New Data? | Permitted Schema Modifications |
-| :--- | :---: | :---: | :--- |
+| :-- | :-: | :-: | :-- |
 | **Backward** | ✅ Yes | ❌ No | Add optional fields; delete optional fields |
 | **Forward** | ❌ No | ✅ Yes | Delete optional fields; add optional fields with defaults |
 | **Full** | ✅ Yes | ✅ Yes | Add or delete fields **ONLY if they have default values** |
@@ -246,9 +263,10 @@ $$\text{ZigZag}(n) = \begin{cases}
 ## 11. Stream-Table Duality & Log Compaction
 
 ### Formal Mathematical Relationship
+
 $$\text{Table}(t) = \int_0^t \text{Stream}(\tau) \, d\tau \quad \Longleftrightarrow \quad \text{Stream} = \frac{d}{dt}\big(\text{Table}\big)$$
-- **Log Compaction Invariant**: Retain latest event offset per key:
-  $$\text{CompactedLog}(K) = \{e \in \text{Log} \mid e.\text{offset} = \max(\text{offsets}(e.\text{key}))\}$$
+
+- **Log Compaction Invariant**: Retain latest event offset per key: $$\text{CompactedLog}(K) = \{e \in \text{Log} \mid e.\text{offset} = \max(\text{offsets}(e.\text{key}))\}$$
 - **Tombstone**: Record with `value = null`. Retained for `delete.retention.ms` before garbage collection.
 
 ---
@@ -256,15 +274,18 @@ $$\text{Table}(t) = \int_0^t \text{Stream}(\tau) \, d\tau \quad \Longleftrightar
 ## 12. Workload Classification & Distributed Theorems
 
 ### PACELC Theorem Classification
+
 $$\text{If Partition }(P) \implies \text{Choose } [A \text{ vs } C] \quad \mathbf{ELSE} \; (E) \implies \text{Choose } [L \text{ vs } C]$$
+
 | System | PACELC Classification | Behavior Under Partition ($P$) | Normal Operation Behavior ($E$) |
-| :--- | :---: | :--- | :--- |
+| :-- | :-: | :-- | :-- |
 | **Google Cloud Spanner** | **PC/EC** | Rejects non-quorum writes; preserves consistency | Synchronous Paxos consensus; pays latency cost |
 | **Apache Cassandra** | **PA/EL** | Accepts writes to available nodes; returns stale data | Reads/writes local node with lowest latency |
 | **Amazon DynamoDB** (default) | **PA/EL** | High availability, eventual consistency | Ultra-low read latency (eventual consistency) |
 | **MongoDB** (w:majority) | **PC/EC** | Blocks writes if primary isolated | Synchronous majority replica acknowledgment |
 
 ### Storage Engine Workload Alignment
+
 ```
                  ┌──────────────────────────────────────────────────────────┐
                  │                Workload Architecture                     │
@@ -284,7 +305,7 @@ $$\text{If Partition }(P) \implies \text{Choose } [A \text{ vs } C] \quad \mathb
 ## 13. Database Concepts Master Quick Map
 
 | Concept | Core Mechanics & Rules | Reference |
-| :--- | :--- | :--- |
+| :-- | :-- | :-- |
 | **Primary / Foreign Key** | **PK**: minimal non-null unique row identifier (`NOT NULL + UNIQUE`, entity integrity). **FK**: column(s) referencing a parent PK/unique key (`RESTRICT`, `CASCADE`, `SET NULL`, referential integrity). | [M01](modules/01-data-models-and-query-languages.md#1-formal-foundations-relational-algebra-and-relational-calculus) |
 | **Normalization (1NF–BCNF)** | **1NF** atomic scalars; **2NF** no partial key deps; **3NF** no transitive non-key deps; **BCNF** every non-trivial FD $X \to Y$ has superkey $X$. Denormalize selectively when join cost exceeds write amplification. | [M01](modules/01-data-models-and-query-languages.md#functional-dependencies-and-normal-forms-1nf-through-bcnf) |
 | **Join Algorithms** | **Nested Loop**: $O(\lvert R \rvert \cdot \lvert S \rvert)$ naive, $O(\lvert R \rvert \cdot \log \lvert S \rvert)$ indexed (best for small outer + selective index). **Hash Join**: $O(\lvert R \rvert + \lvert S \rvert)$ build/probe on unsorted equi-joins (Grace spill to disk). **Sort-Merge**: $O(\lvert R \rvert \log \lvert R \rvert + \lvert S \rvert \log \lvert S \rvert)$ or $O(\lvert R \rvert + \lvert S \rvert)$ pre-sorted via B+Tree; preserves sort order. | [M01](modules/01-data-models-and-query-languages.md#3-data-model-paradigms-relational-document-graph-and-columnar) |
@@ -301,7 +322,7 @@ $$\text{If Partition }(P) \implies \text{Choose } [A \text{ vs } C] \quad \mathb
 ### SQL vs NoSQL Decision Matrix
 
 | Dimension | Relational (SQL) | Document Store | Key-Value / Cache | Wide-Column | Graph Store | Columnar OLAP |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- | :-- | :-- | :-- |
 | **Data Model** | Normalized tables, strict schema | Self-contained JSON/BSON aggregates | Opaque values by primary key | Sparse row key + column families | Vertices, typed edges, properties | Column vectors, compressed blocks |
 | **Joins & ACID** | Rich joins, full multi-row ACID | Single-document ACID; weak cross-doc joins | Atomic single-key ops; no joins | Partition-local writes; no joins | Index-free adjacency traversals | Batch/append-only; analytical joins |
 | **Scaling Profile** | Vertical primary + read replicas (or NewSQL) | Hash/range sharding by shard key | Horizontal slots / consistent hash ring | Masterless consistent-hash ring | Vertical or partitioned subgraphs | MPP distributed scan across shards |
