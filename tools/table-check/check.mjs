@@ -2,6 +2,7 @@
 // Validates every Markdown table in .md files under the given roots.
 // Verifies that pipes inside cells are escaped and table column counts are consistent.
 import { readdir, readFile } from 'node:fs/promises';
+import { statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 const SKIP = new Set([
@@ -18,6 +19,14 @@ const SKIP = new Set([
 ]);
 
 async function* walk(dir) {
+  try {
+    if (!statSync(dir).isDirectory()) {
+      if (dir.endsWith('.md')) yield dir;
+      return;
+    }
+  } catch {
+    return;
+  }
   for (const e of await readdir(dir, { withFileTypes: true })) {
     if (SKIP.has(e.name)) continue;
     const p = join(dir, e.name);

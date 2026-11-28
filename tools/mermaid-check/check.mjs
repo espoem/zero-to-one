@@ -4,6 +4,7 @@
 // regardless of which major GitHub currently ships. Exit code 1 on any failure.
 import { JSDOM } from 'jsdom';
 import { readdir, readFile } from 'node:fs/promises';
+import { statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 const dom = new JSDOM('<!doctype html><html><body></body></html>');
@@ -33,6 +34,14 @@ const SKIP = new Set([
   '.ruff_cache',
 ]);
 async function* walk(dir) {
+  try {
+    if (!statSync(dir).isDirectory()) {
+      if (dir.endsWith('.md')) yield dir;
+      return;
+    }
+  } catch {
+    return;
+  }
   for (const e of await readdir(dir, { withFileTypes: true })) {
     if (SKIP.has(e.name)) continue;
     const p = join(dir, e.name);
