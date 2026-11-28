@@ -1,0 +1,23 @@
+[project]
+name = "zero-to-one-security-identity-python"
+version = "0.1.0"
+description = "FastAPI + PyJWT OAuth 2.1 BFF and RFC 8725 Resource Server executable proofs"
+requires-python = ">=3.14"
+dependencies = [
+  "fastapi>=0.165.0",
+  "httpx2>=2.16.0",
+  "pyjwt[crypto]>=2.10.0",
+  "pytest>=9.0.0",
+  "ruff>=0.17.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["."]
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]

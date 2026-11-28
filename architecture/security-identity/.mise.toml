@@ -1,3 +1,5 @@
 [tools]
-node = "26"
+node = "26.12.1"
+python = "3.14.10"
+uv = "0.13.9"
 "npm:typescript" = "7.0.2"

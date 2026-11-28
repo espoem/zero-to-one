@@ -5,7 +5,7 @@ lockfile_version = 3
 [[tools.node]]
 version = "26.12.1"
 backend = "core:node"
-specifiers = ["26"]
+specifiers = ["26.12.1"]
 
 [tools.node."platforms.linux-x64"]
 checksum = "sha256:0fd1eb7770598f52a21995edf6ed35fc690400fa437c2386af329519e9143132"
@@ -20,3 +20,35 @@ version = "7.0.2"
 aube = { path = ".mise/locks/npm-typescript/7.0.2", digest = "sha256:3d06b3b23564c68cdad7815c356edb1506fab1c42bfb8c54234134fd9650ec17" }
 backend = "npm:typescript"
 specifiers = ["7.0.2"]
+
+[[tools.python]]
+version = "3.14.10"
+backend = "core:python"
+specifiers = ["3.14.10"]
+
+[tools.python."platforms.linux-x64"]
+checksum = "sha256:73ee0629c19e9f87077f318cd50d7e703137c274479ce8e8fd5723e75c86c9bc"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261124/cpython-3.14.10+20261124-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz"
+provenance = "github-attestations"
+
+[tools.python."platforms.macos-arm64"]
+checksum = "sha256:81fca81fcc8a715288fd12286b66bbdaaf4a0db6818bc91826ddbcffae2ac2cf"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261124/cpython-3.14.10+20261124-aarch64-apple-darwin-install_only_stripped.tar.gz"
+provenance = "github-attestations"
+
+[[tools.uv]]
+version = "0.13.9"
+backend = "aqua:astral-sh/uv"
+specifiers = ["0.13.9"]
+
+[tools.uv."platforms.linux-x64"]
+checksum = "sha256:a7fbaff2b9a271d85c1bdb540941090fd1ce011797b4abeb48e4dcd39c2471d5"
+url = "https://github.com/astral-sh/uv/releases/download/0.13.9/uv-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/758513954"
+provenance = "github-attestations"
+
+[tools.uv."platforms.macos-arm64"]
+checksum = "sha256:5aeca67f2283f75235de40d0bd9c0a5bbc5fce23b6d48b3bf9fa1b2db08382ca"
+url = "https://github.com/astral-sh/uv/releases/download/0.13.9/uv-aarch64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/758513631"
+provenance = "github-attestations"
