@@ -204,7 +204,90 @@ When two peer devices behind NATs need to establish direct peer-to-peer audio/vi
 
 ---
 
-## 7. Then vs. Now: Edge Infrastructure Evolution
+## 7. Load Balancing Distribution Algorithms (L4 & L7)
+
+Whether an edge proxy operates on Layer 4 5-tuples or Layer 7 HTTP requests, it must select one healthy upstream from a pool of $N$ backends $\{B_0, \dots, B_{N-1}\}$. Distribution algorithms trade off per-request state, tail-latency sensitivity, connection affinity, and disruption under node churn.
+
+```mermaid
+flowchart TD
+    Req["Incoming Flow or Request"] --> Class{"Affinity or Load-Aware?"}
+    Class -->|"Stateless Cyclic"| RR["Round Robin / Smooth WRR<br/>O(1) or O(N) state-light"]
+    Class -->|"In-Flight Load"| Load{"Global Scan vs Sampled?"}
+    Load -->|"Scan N backends"| LC["Least Connections<br/>argmin(a_i / w_i)"]
+    Load -->|"Sample 2 random + EWMA"| P2C["Least Response Time (P2C + EWMA)<br/>O(ln ln n) max load bound"]
+    Class -->|"Stateless Affinity"| Hash{"Ring / Table vs Modulo?"}
+    Hash -->|"Client IP % N"| IPH["IP Hash<br/>CGNAT hotspot & N/(N+1) churn"]
+    Hash -->|"Karger Ring / Maglev"| CH["Consistent Hashing<br/>~1/(N+1) churn on scaling"]
+```
+
+### 1. Round Robin (RR)
+
+Assigns request $k$ to backend $k \bmod N$ in strictly cyclic order ($O(1)$ time, $O(1)$ state). It assumes homogeneous hardware and uniform per-request service time; when request costs are heavy-tailed or one backend slows down due to garbage collection or thermal throttling, RR keeps feeding the degraded node at an equal rate, amplifying tail latency.
+
+### 2. Weighted Round Robin (Nginx Smooth WRR)
+
+Each backend $B_i$ carries a static capacity weight $w_i > 0$, targeting share $w_i / W$ where $W = \sum_{i=0}^{N-1} w_i$. Naive block WRR emits $w_i$ consecutive requests to $B_i$ before moving on, inducing micro-bursts and queue overflows on the highest-weight server. **Nginx Smooth WRR** prevents bursting by maintaining a dynamic `current-weight` $c_i$ (initialized to $0$) for every backend and executing three steps per request:
+
+$$c_i \leftarrow c_i + w_i \quad (\forall i), \qquad s = \arg\max_i c_i, \qquad c_s \leftarrow c_s - W$$
+
+Over every cycle of $W$ requests, the sum invariant $\sum_i c_i = 0$ holds and every backend receives exactly $w_i$ requests interleaved smoothly (for weights $[5, 1, 1]$, the exact 7-request sequence is `[A, A, B, A, C, A, A]`, never 5 consecutive requests to `A`). Selection takes $O(N)$ time (small upstream pools) or $O(\log N)$ with a max-heap.
+
+### 3. Least Connections (LC)
+
+Routes to the backend minimizing weighted active in-flight connections $a_i$:
+
+$$s = \arg\min_i \frac{a_i}{w_i}$$
+
+Because $a_i$ tracks live concurrency, LC naturally diverts traffic away from backends stalled on slow queries or holding long-lived WebSocket and gRPC streams. **Operational pitfall:** a newly added or fast-failing backend reports $a_i \approx 0$ and attracts a thundering herd of new connections; mitigate this with `slow_start` weight ramping, `max_conns` caps, and passive health checks that eject backends returning rapid `5xx` errors.
+
+### 4. Least Response Time (EWMA + Power of Two Random Choices)
+
+Pure connection counts miss backends whose queues are shallow only because requests time out or fail quickly, or whose latency varies across availability zones. Modern L7 proxies (Nginx `least_time`, Envoy, Linkerd) track an **Exponentially Weighted Moving Average (EWMA)** of response latency $\hat{\tau}_i$:
+
+$$\hat{\tau}_i^{(t)} = (1 - \alpha)\,\hat{\tau}_i^{(t-1)} + \alpha\,\tau_{\text{sample}}, \qquad \alpha \in (0, 1)$$
+
+A smoothing factor $\alpha \in [0.1, 0.3]$ filters single-request jitter while reacting within seconds to latency degradation, typically scored as $\hat{\tau}_i \cdot (a_i + 1) / w_i$.
+
+To avoid $O(N)$ pool scans and prevent multiple stateless proxy instances from herding onto the same "best" node between metric updates, distributed load balancers pair EWMA with **Power of Two Random Choices (P2C)** (Mitzenmacher, IEEE TPDS 2001): sample two backends uniformly at random without replacement and route to the lower-scored candidate. In the balls-into-bins model ($n$ jobs across $n$ servers), pure random routing yields maximum load $\Theta(\ln n / \ln \ln n)$, whereas P2C collapses the maximum load exponentially to:
+
+$$L_{\max}^{\text{P2C}} = \frac{\ln \ln n}{\ln 2} + \Theta(1) = \Theta(\ln \ln n)$$
+
+This achieves near-optimal balance in strictly $O(1)$ per-request time without cross-proxy coordination.
+
+### 5. IP Hash & The CGNAT / RFC 6598 Trap
+
+IP Hash provides stateless session affinity at L4 or L7 by mapping a hash of the client IP (Nginx `ip_hash` uses the first 3 IPv4 octets `/24` or the full 128-bit IPv6 address) modulo $N$: $\text{idx} = h(\text{ip-prefix}) \bmod N$. **Production traps:**
+
+- **CGNAT / RFC 6598 Hot-Spotting:** Carrier-Grade NAT (`100.64.0.0/10`, [RFC 6598](https://www.rfc-editor.org/rfc/rfc6598.html)) and corporate VPN egress gateways multiplex thousands of mobile or office subscribers behind a single public IPv4 address (or `/24` block). IP Hash collapses the entire subscriber cohort onto one backend, saturating it while sibling nodes sit idle.
+- **Affinity Breakage & Modulo Churn:** Mobile handoffs (Wi-Fi $\leftrightarrow$ 4G/5G) mutate client IP mid-session, and changing $N \to N \pm 1$ remaps $\approx N / (N + 1)$ of all flows.
+
+### 6. Consistent Hashing (Karger Ring & Maglev)
+
+To preserve cache locality and session affinity across node churn, **Consistent Hashing** (Karger et al., STOC 1997) maps both keys and $V$ virtual nodes (`vnodes`) per server onto a circular integer ring $[0, 2^{32} - 1]$; each key routes to the first vnode clockwise via binary search in $O(\log(NV))$ time. Adding or removing 1 server among $N$ remaps only $\approx 1 / (N + 1)$ of keys (versus $\approx N / (N + 1)$ for modulo hashing), while virtual nodes bound per-server variance to $O(1 / \sqrt{V})$. For the full theoretical treatment of Karger rings, Jump Consistent Hash (Lamping & Veach, 2014), and Rendezvous (HRW) hashing, see [DSA Module 13 §5](../../../algorithms/dsa/modules/13-probabilistic-data-structures-and-randomized-algorithms.md#5-consistent-hashing-algorithms); for $O(1)$ prime-table L4 packet switching without ring traversal, see [Section 3 (Google Maglev Consistent Hashing)](#3-google-maglev-consistent-hashing).
+
+### Algorithm Comparison Matrix
+
+| Algorithm | Selection Complexity | State Required | Affinity | Pros | Cons / Pitfalls | Best Use Case |
+| :-- | :-: | :-: | :-: | :-- | :-- | :-- |
+| **Round Robin** | $O(1)$ | Cursor ($O(1)$) | None | Zero tuning; uniform count on homogeneous nodes | Blind to latency spikes and variable request cost | Stateless, uniform-cost microservices |
+| **Smooth WRR** | $O(N)$ \| $O(\log N)$ | `cw` vector ($O(N)$) | None | Respects capacity weights without block bursts | Still blind to in-flight stalls and noisy neighbors | Mixed instance sizes with similar request work |
+| **Least Connections** | $O(N)$ | Active counts ($O(N)$) | None | Adapts to variable request duration automatically | Cold-start & fast-fail `5xx` thundering herd | Long-lived WebSockets, gRPC streams, DB pools |
+| **LRT (EWMA + P2C)** | $O(1)$ | Local EWMA + conns | None | $\Theta(\ln \ln n)$ max load; avoids stale-herd stampedes | Slightly higher tail on $N \le 3$ pools vs full scan | Large L7 microservice meshes (Envoy, Linkerd) |
+| **IP Hash** | $O(1)$ | Pool list ($O(N)$) | IP-based | Cookie-free sticky routing at L4 or L7 | CGNAT (RFC 6598) hotspots; $\sim N/(N+1)$ churn | Legacy stateful apps without shared session store |
+| **Consistent Hashing** | $O(\log(NV))$ ring \| $O(1)$ Maglev | Ring or $M$-table | Key-based | Only $\sim 1/(N+1)$ keys move on node add/remove | Ignores backend CPU/latency load without bounded loads | Sharded caches, stateful routing, L4 VIP steering |
+
+### Case Study: Skewed Backend Latency & Node Churn
+
+Consider a 10-node upstream cluster (`node-0`..`node-9`, baseline `5 ms` RTT) serving mixed HTTP API traffic and stateful cache lookups behind an edge proxy, where `node-3` hits a GC/noisy-neighbor stall (`250 ms` latency) and `node-9` is drained for deployment:
+
+1. **Latency Skew Impact:** Under Round Robin, `node-3` still receives $10\%$ of requests, inflating its in-flight queue by $50\times$ (Little's Law, $L = \lambda W$) and dragging cluster $p_{99}$ to $>250\text{ ms}$. With **EWMA + P2C** ($\alpha = 0.2$), `node-3`'s EWMA climbs within a handful of samples so P2C comparisons reject it in favor of healthy peers, dropping its traffic share below $2\%$ until recovery.
+2. **Churn & Affinity Impact:** Removing `node-9` under modulo **IP Hash** (`hash % N`) reshuffles $\sim 90\%$ ($9/10$) of cache-key/session mappings, causing a massive cache-miss storm, while mobile users behind a single RFC 6598 CGNAT gateway already overload whichever node owns their `/24`. Replacing modulo hashing with a **Consistent Hash Ring** ($150$ vnodes/node) limits remapping to $\sim 10\%$ ($1/10$)—exclusively keys previously owned by `node-9`—leaving all other backend caches intact.
+
+See [`15-load-balancing-algorithms.test.ts`](../examples/15-load-balancing-algorithms.test.ts) for deterministic TypeScript simulations proving Smooth WRR interleaving, EWMA + P2C slow-node shedding, RFC 6598 CGNAT skew, and $1/(N+1)$ vs $N/(N+1)$ churn bounds.
+
+---
+
+## 8. Then vs. Now: Edge Infrastructure Evolution
 
 | Dimension | Legacy Practice (Then) | Modern Architecture (Now) | Rationale for Transition |
 | :-- | :-- | :-- | :-- |
