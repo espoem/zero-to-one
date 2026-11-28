@@ -208,6 +208,8 @@ def test_rtr_reuse_detection_revokes_family_and_bff_session() -> None:
         r2 = client.post("/bff/refresh", headers={"Sec-Fetch-Site": "same-origin"})
         assert r2.status_code == 401
         assert sid not in app.state.sessions
+        set_cookie = r2.headers.get("set-cookie", "").lower()
+        assert "__host-sid=" in set_cookie and "max-age=0" in set_cookie
 
 
 def test_pkce_s256_vector_stability() -> None:

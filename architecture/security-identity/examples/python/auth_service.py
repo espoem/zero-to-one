@@ -343,7 +343,7 @@ def create_app(auth_server: InMemoryAuthorizationServer | None = None) -> FastAP
             sessions.pop(sid, None)
             resp = JSONResponse({"detail": "session_revoked_on_reuse"}, status_code=401)
             resp.delete_cookie(SESSION_COOKIE, path="/")
-            raise HTTPException(status_code=401, detail="session_revoked_on_reuse") from None
+            return resp
 
         session.access_token = rotated["access_token"]
         session.refresh_token = rotated["refresh_token"]

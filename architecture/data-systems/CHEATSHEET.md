@@ -308,4 +308,3 @@ $$\text{If Partition }(P) \implies \text{Choose } [A \text{ vs } C] \quad \mathb
 | **PACELC Bias** | `PC/EC` (or single-node ACID) | Configurable (`PC/EC` majority default) | `PA/EL` (async replicas) | `PA/EL` (tunable $W+R>N$) | `PC/EC` | `PC/EC` (or object-storage decoupled) |
 | **Canonical Fit** | Ledgers, orders, complex relational invariants | Catalogs, user profiles, evolving schemas | Sessions, rate limits, hot read cache | High-write telemetry, time-series logs | Fraud rings, social/knowledge graphs | BI dashboards, petabyte aggregations |
 | **Examples** | PostgreSQL, MySQL, Spanner | MongoDB, DynamoDB (doc), Couchbase | Redis, Valkey, Memcached | Cassandra, ScyllaDB, Bigtable | Neo4j, Amazon Neptune | ClickHouse, DuckDB, Snowflake |
-$$

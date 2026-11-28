@@ -57,7 +57,7 @@ graph TD
 
 ## 2. Effective Latency Mathematics and Cache Hit Ratios
 
-The performance benefit of caching is modeled via the **Effective Memory Access Time ($T\_{\text{eff}}$)**:
+The performance benefit of caching is modeled via the **Effective Memory Access Time ($T_{\text{eff}}$)**:
 
 $$T_{\text{eff}} = H \cdot T_{\text{cache}} + (1 - H) \cdot T_{\text{db}}$$
 
@@ -157,15 +157,14 @@ sequenceDiagram
 
 A worker recomputes and refreshes the cache entry if:
 
-$$\Delta - \beta \cdot \delta \cdot \ln(\text{rand}()) > \text{TTL}$$
+$$-\beta \cdot \delta \cdot \ln(\text{rand}()) \ge \text{TTL}_{\text{remaining}}$$
 
 Where:
 
-- $\Delta$ is the remaining time until key expiration ($\text{expiry} - \text{currentTime}$).
+- $\text{TTL}_{\text{remaining}} = t_{\text{expiry}} - t_{\text{now}}$ is the remaining time until key expiration (equivalently written $t_{\text{now}} - \beta \cdot \delta \cdot \ln(\text{rand}()) \ge t_{\text{expiry}}$).
 - $\delta$ is the delta computation time (how long it took the database to calculate the value on the last run).
 - $\beta > 0$ is an aggressiveness multiplier (typically $\beta = 1.0$).
 - $\text{rand}() \in (0, 1]$ is a uniform random real number.
-- $\text{TTL}$ is the current remaining lifetime.
 
 ```mermaid
 graph LR
@@ -295,11 +294,11 @@ Suppose two concurrent threads, Writer 1 and Writer 2, update the same entity:
 
 The XFetch algorithm evaluates a probabilistic condition during routine read operations:
 
-$$\Delta - \beta \cdot \delta \cdot \ln(\text{rand}()) > \text{TTL}$$
+$$-\beta \cdot \delta \cdot \ln(\text{rand}()) \ge \text{TTL}_{\text{remaining}}$$
 
-Where $\Delta$ is the remaining lifetime of the key, $\delta$ is the delta computation duration, $\beta$ is a tuning multiplier, and $\text{rand}() \in (0, 1]$ is a uniform random number.
+Where $\text{TTL}_{\text{remaining}} = t_{\text{expiry}} - t_{\text{now}}$ is the remaining lifetime of the key, $\delta$ is the delta computation duration, $\beta$ is a tuning multiplier, and $\text{rand}() \in (0, 1]$ is a uniform random number.
 
-Because $\ln(\text{rand}())$ is negative, the probability that the condition evaluates to true is nearly zero when the key is fresh, but increases smoothly and exponentially as the key approaches its expiration deadline ($\Delta \to 0$). Under high read traffic, exactly one client will randomly evaluate this condition to true in the window immediately preceding expiration, triggering an **asynchronous background recomputation** that refreshes the key's TTL. The key never expires, completely preventing concurrent thundering herds without any distributed mutex locking.
+Because $\ln(\text{rand}())$ is negative, $-\beta \cdot \delta \cdot \ln(\text{rand}()) \ge 0$ acts as a non-negative random lookahead offset; its probability of exceeding $\text{TTL}_{\text{remaining}}$ is nearly zero when the key is fresh, and increases smoothly and exponentially as the key approaches its expiration deadline ($\text{TTL}_{\text{remaining}} \to 0$). Under high read traffic, exactly one client will randomly evaluate this condition to true in the window immediately preceding expiration, triggering an **asynchronous background recomputation** that refreshes the key's TTL. The key never expires, completely preventing concurrent thundering herds without any distributed mutex locking.
 </details>
 
 <details><summary>3. Explain the difference between Cache Penetration, Cache Breakdown, and Cache Avalanche.</summary>
